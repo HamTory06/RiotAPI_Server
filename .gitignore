@@ -24,6 +24,7 @@ bin/
 *.ipr
 out/
 !**/main/resources/application.yml
+!**/main/kotlin/com/api/study/riot_api/file
 !**/src/main/**/out/
 !**/src/test/**/out/
 
