@@ -1,19 +1,24 @@
 package com.api.study.riot_api.domain.entity
 
-import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
-import jakarta.persistence.Id
-import lombok.Getter
+import javax.persistence.*
+
 
 @Entity
-data class User (
+@Table(name = "user")
+class User (
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val idx: Long,
-    val name: String,
-    val id: String,
-    val password: String,
-    val lolName: String,
-    val valName: String
+    var idx: Long = 0L,
+    @Column(name = "name", unique = true, nullable = false)
+    var name: String,
+    @Column(name = "id", unique = true, nullable = false)
+    var id: String,
+    @Column(name = "password", unique = false, nullable = false)
+    var password: String,
+    @Column(name="mail", unique = true, nullable = false)
+    var mail: String,
+    @Column(name = "lol_name", unique = true, nullable = true)
+    var lolName: String?,
+    @Column(name = "val_name", unique = true, nullable = true)
+    var valName: String?
 )
