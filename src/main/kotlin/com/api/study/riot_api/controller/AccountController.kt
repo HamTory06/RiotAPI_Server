@@ -5,9 +5,8 @@ import com.api.study.riot_api.domain.dto.LoginRequestDTO
 import com.api.study.riot_api.domain.dto.SignupRequestDTO
 import com.api.study.riot_api.service.LoginService
 import com.api.study.riot_api.service.SignupService
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.repository.query.Param
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -23,17 +22,18 @@ class AccountController {
     private lateinit var loginService: LoginService
     @PostMapping("/login")
     fun login(
-        @RequestBody loginRequestDTO: LoginRequestDTO
+        @Param("id") id: String,
+        @Param("password") password: String,
     ): JwtDto {
-        loginService.execute(loginRequestDTO)
-
-        return loginService.execute(loginRequestDTO)
+        loginService.execute(LoginRequestDTO(id,password))
+        return loginService.execute(LoginRequestDTO(id,password))
     }
 
     @PostMapping("/signup")
     fun signup(
         @RequestBody @Valid signupRequestDTO: SignupRequestDTO
-    ) {
+    ): SignupRequestDTO {
         signupService.save(signupRequestDTO)
+        return signupRequestDTO
     }
 }

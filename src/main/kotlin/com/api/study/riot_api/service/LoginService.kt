@@ -20,8 +20,6 @@ class LoginService(
     private var securityConfig: SecurityConfig,
     private var jwtToken: JwtToken
 ) {
-    private val LOGGER: Logger = LoggerFactory.getLogger(AccountController::class.java)
-
     fun execute(requestDTO: LoginRequestDTO): JwtDto {
         val user: User = accountRepository.findById(requestDTO.id)
             .orElseThrow { CustomException(ErrorCode.USER_NOT_FOUND_BAD_REQUEST) }
