@@ -8,6 +8,6 @@ import java.util.*
 @Repository
 interface AccountRepository: JpaRepository<User, Long> {
 
-    fun findById(id: String): Optional<User>;
+    fun findById(id: String): Optional<User>
 
 }
