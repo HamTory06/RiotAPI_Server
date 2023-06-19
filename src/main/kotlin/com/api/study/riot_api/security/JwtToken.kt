@@ -1,29 +1,62 @@
 package com.api.study.riot_api.security
 
+import com.api.study.riot_api.controller.AccountController
+import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Header
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
-import java.time.Duration.ofMinutes
+import java.time.Duration.*
 import java.util.*
 
 @Component
 class JwtToken {
 
     @Value("\${app.secretKey}")
-    private val secret: String = "";
-    fun makeJwtToken(userIdx: Long, email: String): String {
+    private val secret: String = ""
+
+    private val LOGGER: Logger = LoggerFactory.getLogger(AccountController::class.java)
+
+    fun makeJwtAccessToken(userIdx: Long, email: String): String {
         val now = Date()
 
         return Jwts.builder()
-            .setHeaderParam(Header.TYPE, Header.JWT_TYPE) // (1)
-            .setIssuer("fresh") // (2)
-            .setIssuedAt(now) // (3)
-            .setExpiration(Date(now.time + ofMinutes(30).toMillis())) // (4)
-            .claim("id", userIdx) // (5)
+            .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
+            .setIssuedAt(now)
+            .setExpiration(Date(now.time + ofMinutes(30).toMillis()))
+            .claim("id", userIdx)
             .claim("email", email)
-            .signWith(SignatureAlgorithm.HS256, secret) // (6)
+            .signWith(SignatureAlgorithm.HS256, secret)
             .compact()
+    }
+
+    fun makeJwtRefreshToken(): String {
+        val now = Date()
+
+        return Jwts.builder()
+            .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
+            .setIssuedAt(now)
+            .setExpiration(Date(now.time + ofHours(24).toMillis()))
+            .signWith(SignatureAlgorithm.HS256, secret)
+            .compact()
+    }
+
+    fun validateToken(token: String): Boolean {
+        val token = token.replace("Bearer ", "") // "Bearer " 제거
+        return try {
+            val claims: Claims = Jwts.parser()
+                .setSigningKey(secret)
+                .parseClaimsJws(token)
+                .body
+
+            val expiration = claims.expiration
+            val now = Date()
+            return expiration.before(now)
+        } catch (e: Exception) {
+            true
+        }
     }
 }
