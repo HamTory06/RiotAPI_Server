@@ -6,6 +6,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springdoc.core.RequestBodyService
 import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
@@ -31,26 +32,28 @@ class GlobalExceptionHandler {
         return ResponseEntity(
             ErrorDto(
                 400,
-                "중복된 값"
-            ), HttpStatus.INTERNAL_SERVER_ERROR
+                ex.message!!
+            ), HttpStatus.BAD_REQUEST
         )
     }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleConstraintViolationException(ex: MethodArgumentNotValidException): ResponseEntity<ErrorDto> {
-        LOGGER.info("500")
         return ResponseEntity(
             ErrorDto(
-                500,
+                400,
                 ex.allErrors[0].defaultMessage!!
-            ), HttpStatus.INTERNAL_SERVER_ERROR
+            ), HttpStatus.BAD_REQUEST
         )
+    }
 
-        /**
-         *         return ResponseEntity
-         *                 .status(HttpStatus.BAD_REQUEST)
-         *                 .body(new ExceptionResponse(e.getAllErrors().get(0).getDefaultMessage()));
-         */
-
+    @ExceptionHandler(EmptyResultDataAccessException::class)
+    fun handleEmptyResultDataAccessException(ex: MethodArgumentNotValidException): ResponseEntity<ErrorDto>{
+        return ResponseEntity(
+            ErrorDto(
+                400,
+                ex.allErrors[0].defaultMessage!!
+            ), HttpStatus.BAD_REQUEST
+        )
     }
 }
