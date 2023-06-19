@@ -7,7 +7,7 @@ import javax.validation.constraints.Pattern
 import javax.validation.constraints.Size
 
 
-data class SignupRequestDTO(
+data class SignupRequestDto(
     @field:NotBlank(message = "이름은 필수 입력 값입니다.")
     @field:Size(max = 16)
     val name: String,
