@@ -15,6 +15,7 @@ import com.api.study.riot_api.repository.TokenRepository
 import com.api.study.riot_api.repository.ValRepository
 import com.api.study.riot_api.security.JwtToken
 import org.springframework.stereotype.Service
+import javax.transaction.Transactional
 
 @Service
 class UserInformationService(
@@ -24,11 +25,17 @@ class UserInformationService(
     private var valRepository: ValRepository,
     private var jwtToken: JwtToken
 ) {
+    @Transactional
     fun update(userDto: UpdateUserDto, id: String, accessToken: String) {
         val user = accountRepository.findById(id).get()
         if (jwtToken.validateToken(accessToken)) {
             jwtToken.makeJwtAccessToken(user.idx, user.mail)
         }
+
+//        user.updateUserRiotName(
+//            LolUser(),
+//            userDto.valName
+//        );
 
         lolRepository.save(LolUser(user.idx, lolUserName = userDto.lolName))
         accountRepository.save(user)
