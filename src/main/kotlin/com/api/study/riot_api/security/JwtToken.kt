@@ -27,7 +27,7 @@ class JwtToken {
             .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
             .setIssuedAt(now)
             .setExpiration(Date(now.time + ofMinutes(30).toMillis()))
-            .claim("id", userIdx)
+            .claim("idx", userIdx)
             .claim("email", email)
             .signWith(SignatureAlgorithm.HS256, secret)
             .compact()

@@ -28,7 +28,6 @@ class AccountController {
     fun login(
         @RequestBody @Valid loginRequestDTO: LoginRequestDTO,
     ): LoginResponse {
-        loginService.execute(loginRequestDTO)
         return LoginResponse(loginService.execute(loginRequestDTO), "200")
     }
 

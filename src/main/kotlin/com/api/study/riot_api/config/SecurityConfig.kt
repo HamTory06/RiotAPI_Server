@@ -19,18 +19,13 @@ class SecurityConfig {
             .cors().and()
             .csrf().disable()
             .formLogin().disable()
-
         http
             .sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-
         http
             .authorizeRequests()
-
             .antMatchers("/**").permitAll()
-
             .anyRequest().authenticated()
-
         return http.build()
     }
 

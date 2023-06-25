@@ -6,11 +6,12 @@ import javax.persistence.*
 @Table(name = "Token")
 class Token (
     @Id
-    var idx: Long = 0,
+    @Column(name = "idx")
+    var idx: Long,
 
-    @Column(unique = true)
+    @Column(unique = true, name = "access_token")
     var accessToken: String? = null,
 
-    @Column(unique = true)
-    var refreshToken: String? = null
+    @Column(unique = true, name = "refresh_token")
+    var refreshToken: String? = null,
 )
