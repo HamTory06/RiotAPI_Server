@@ -2,10 +2,8 @@ package com.api.study.riot_api.api
 
 import com.api.study.riot_api.domain.dto.riotapi.asiar.RiotUserPuuIdResponse
 import org.springframework.cloud.openfeign.FeignClient
-import org.springframework.data.jpa.repository.Query
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
 
 @FeignClient(name = "asia", url = "https://asia.api.riotgames.com/")

@@ -1,7 +1,9 @@
 package com.api.study.riot_api.controller
 
+import com.api.study.riot_api.service.LoginService
 import com.api.study.riot_api.service.RiotAPIService
-import com.api.study.riot_api.service.SignupService
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
@@ -17,7 +19,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 @RestController
-@RequestMapping("/api/riotAPI/")
+@RequestMapping("/api/riotAPI")
 class RiotController {
     @Value("\${app.apiKey}")
     private val riotAPIKey: String = ""
@@ -25,13 +27,16 @@ class RiotController {
     @Autowired
     private lateinit var riotAPIService: RiotAPIService
 
+    private val logger: Logger = LoggerFactory.getLogger(LoginService::class.java)
+
+
     @GetMapping("/riot.txt")
     fun download(): ResponseEntity<ByteArray> {
         val file =
             File("/Users/hamtory/Documents/github/BackEnd/RiotAPI/src/main/kotlin/com/api/study/riot_api/file/riot.txt")
         val path = Paths.get(file.absolutePath)
 
-        val header = HttpHeaders();
+        val header = HttpHeaders()
         header.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=riot.txt")
         header.add("Cache-Control", "no-cache, no-store, must-revalidate")
         header.add("Pragma", "no-cache")
