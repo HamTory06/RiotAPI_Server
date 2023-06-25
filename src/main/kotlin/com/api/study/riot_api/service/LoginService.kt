@@ -15,39 +15,73 @@ import com.api.study.riot_api.repository.LolRepository
 import com.api.study.riot_api.repository.TokenRepository
 import com.api.study.riot_api.repository.ValRepository
 import com.api.study.riot_api.security.JwtToken
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.util.*
+import javax.swing.text.html.Option
 
 @Service
 class LoginService(
     private var accountRepository: AccountRepository,
     private var lolRepository: LolRepository,
     private var valRepository: ValRepository,
-    private var securityConfig: SecurityConfig,
     private var jwtToken: JwtToken,
-    private var tokenRepository: TokenRepository
+    private var tokenRepository: TokenRepository,
+    private var securityConfig: SecurityConfig
 ) {
 
+    private val logger: Logger = LoggerFactory.getLogger(LoginService::class.java)
+
+    private lateinit var userData: User
     private var lolUserData: LolUser? = null
     private var valUserData: ValUser? = null
+    private var tokenUserData: Token? = null
 
     fun execute(requestDTO: LoginRequestDTO): UserInformationRequestDto {
-        val user: User = accountRepository.findById(requestDTO.id)
-            .orElseThrow { CustomException(ErrorCode.USER_NOT_FOUND_BAD_REQUEST) }
-        val lolUser: Optional<LolUser> = lolRepository.findById(user.idx)
-        val valUser: Optional<ValUser> = valRepository.findById(user.idx)
-        if(lolUser.isPresent){
-            lolUserData = lolUser.get()
+        val user = accountRepository.findById(requestDTO.id)
+        if(user.isPresent){
+            userData = user.get()
+            if(securityConfig.passwordEncoder().matches(requestDTO.password, userData.password)){
+                val lolUser: Optional<LolUser> = lolRepository.findById(userData.idx)
+                val valUser: Optional<ValUser> = valRepository.findById(userData.idx)
+                val token: Optional<Token> = tokenRepository.findById(userData.idx)
+                if (lolUser.isPresent) {
+                    lolUserData = lolUser.get()
+                }
+
+                if (valUser.isPresent) {
+                    valUserData = valUser.get()
+                }
+
+                if (token.isPresent) {
+                    tokenUserData = token.get()
+                }
+
+                val accountToken = jwtToken.makeJwtAccessToken(userData.idx, userData.mail)
+                val refreshToken = jwtToken.makeJwtRefreshToken()
+
+                tokenRepository.save(
+                    Token(
+                        idx = userData.idx,
+                        accessToken = accountToken,
+                        refreshToken = refreshToken,
+                    )
+                )
+
+                return UserInformationRequestDto(
+                    idx = userData.idx,
+                    id = userData.id,
+                    name = userData.name,
+                    mail = userData.mail,
+                    lolUserName = userData.lolName,
+                    valUserName = userData.valName,
+                    token = JwtDto(accountToken, refreshToken)
+                )
+            }
+            throw CustomException(ErrorCode.NOT_FOUND_USER_PASSWORD_BAD_REQUEST)
         }
-        if(valUser.isPresent){
-            valUserData = valUser.get()
-        }
-
-        tokenRepository.save(Token(accessToken = jwtToken.makeJwtAccessToken(user.idx, user.mail), refreshToken = jwtToken.makeJwtRefreshToken(), idx = user.idx))
-        val token: Token = tokenRepository.findById(user.idx).get()
-
-        return UserInformationRequestDto(user.idx, user.id, user.name, user.mail, lolUserName = lolUserData?.lolUserName?:"", valUserData?.valUserName?:"",  JwtDto(token.accessToken!!,token.refreshToken!!))
-
+        throw CustomException(ErrorCode.NOT_FOUND_USER_ID_BAD_REQUEST)
     }
 
 }
