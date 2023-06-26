@@ -14,18 +14,6 @@ interface ExternalDdragonApiClient {
     @GetMapping("/api/versions.json")
     fun getLolVersions(): LolVersionsResponse
 
-    @GetMapping("/lol/match/v5/matches/by-puuid/{PUUID}/ids")
-    fun getUserMatchesId(
-        @PathVariable(value = "PUUID") puuid: String,
-        @RequestParam(value = "api_key") apiKey: String,
-        @RequestParam(value = "start") start: Int,
-        @RequestParam(value = "count") count: Int,
-    ): UserMatchesIdResponse
 
-    @GetMapping("/lol/match/v5/matches/{matchId}")
-    fun getUserMatches(
-        @RequestParam(value = "api_key") apiKey: String,
-        @PathVariable(value = "matchId") matchId: String
-    ): UserMatchesResponse
 
 }
