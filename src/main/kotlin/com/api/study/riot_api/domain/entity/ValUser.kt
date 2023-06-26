@@ -6,12 +6,11 @@ import javax.persistence.*
 @Table(name = "val_user")
 class ValUser (
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idx")
-    var idx: Long,
+    val idx: Long = 0L,
 
-    @Column(name = "val_user_level")
     var valUserLevel: Int? = null,
 
-    @Column(name = "val_user_name")
-    var valUserName: String? = null,
+    var valUserName: String = "",
 )

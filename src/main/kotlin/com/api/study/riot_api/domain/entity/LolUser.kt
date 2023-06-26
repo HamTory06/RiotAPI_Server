@@ -6,8 +6,9 @@ import javax.persistence.*
 @Table(name = "lol_user")
 class LolUser (
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idx")
-    var idx: Long,
+    val idx: Long = 0,
 
     @Column(name = "lol_user_level")
     var lolUserLevel: Int? = null,
@@ -23,6 +24,5 @@ class LolUser (
 
     @Column(name = "lol_user_accountId")
     var lolUserAccountId: String? = null,
-
 
 )

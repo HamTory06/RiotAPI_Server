@@ -22,65 +22,84 @@ import javax.transaction.Transactional
 @Service
 class UserInformationService(
     private var accountRepository: AccountRepository,
-    private var tokenRepository: TokenRepository,
     private var lolRepository: LolRepository,
     private var valRepository: ValRepository,
+    private var tokenRepository: TokenRepository,
     private var jwtToken: JwtToken
 ) {
     @Autowired
     private lateinit var riotAPIService: RiotAPIService
 
-    private val logger: Logger = LoggerFactory.getLogger(AccountController::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(UserInformationService::class.java)
 
     @Value("\${app.apiKey}")
     private val riotAPIKey: String = ""
 
+    private lateinit var userData: User
+    private var lolUser: LolUser? = null
+    private var valUser: ValUser? = null
+
     @Transactional
     fun update(userDto: UpdateUserDto, id: Long, accessToken: String): UpdateUserDto {
+
         val user = accountRepository.findById(id).get()
+
         if (jwtToken.validateToken(accessToken)) {
             jwtToken.makeJwtAccessToken(user.idx, user.mail)
         }
 
-        if (userDto.valName != "") {
-            logger.info(userDto.valName)
-            valRepository.save(ValUser(idx = user.idx, valUserName = userDto.valName))
+
+        if (userDto.valName != "" && userDto.valName != null) {
+            val valUserData = ValUser(
+                valUserName = userDto.valName
+            )
+            valRepository.save(valUserData)
+            if (valRepository.findByValUserName(userDto.valName).isPresent)
+                valUser = valRepository.findByValUserName(userDto.valName).get()
         }
 
         if (userDto.lolName != "" && userDto.lolName != null) {
-            logger.info(userDto.lolName)
             val riotLolUserData = riotAPIService.getUserInformation(
                 accessToken = accessToken,
                 apiKey = riotAPIKey,
                 userName = userDto.lolName
             )
-            logger.info(riotLolUserData.toString())
-            lolRepository.save(
-                LolUser(
-                    idx = user.idx,
-                    lolUserName = userDto.lolName,
-                    lolUserLevel = riotLolUserData.summonerLevel,
-                    lolUserPuuId = riotLolUserData.puuid,
-                    lolUserAccountId = riotLolUserData.accountId,
-                    lolUserId = riotLolUserData.id
-                )
+
+            val lolUserData = LolUser(
+                lolUserName = userDto.lolName,
+                lolUserLevel = riotLolUserData.summonerLevel,
+                lolUserPuuId = riotLolUserData.puuid,
+                lolUserAccountId = riotLolUserData.accountId,
+                lolUserId = riotLolUserData.id
             )
+
+            logger.info(lolUserData.toString())
+
+            lolRepository.save(
+                lolUserData
+            )
+
+            if (lolRepository.findByLolUserName(userDto.lolName).isPresent)
+                lolUser = lolRepository.findByLolUserName(userDto.lolName).get()
+
         }
 
-        val userData = User(
+        userData = User(
             idx = user.idx,
             name = user.name,
             id = user.id,
             password = user.password,
             mail = user.mail,
-            lolName = userDto.lolName?:"",
-            valName = userDto.valName?:""
+            lolId = lolUser?.idx,
+            valId = valUser?.idx
         )
 
         accountRepository.save(userData)
 
         return userDto
+
     }
+
 
     fun deleteUser(id: Long, accessToken: String) {
         if (jwtToken.validateToken(accessToken)) {
@@ -88,8 +107,6 @@ class UserInformationService(
         }
 
         val userData = accountRepository.findById(id)
-        val valUserData = valRepository.findById(id)
-        val lolUserData = lolRepository.findById(id)
         val tokenData = tokenRepository.findById(id)
         if (userData.isPresent)
             accountRepository.deleteById(id)
@@ -97,11 +114,6 @@ class UserInformationService(
             throw CustomException(ErrorCode.NOT_FOUND_USER_IDX_BAD_REQUEST)
         if (tokenData.isPresent)
             tokenRepository.deleteById(id)
-        if (valUserData.isPresent)
-            valRepository.deleteById(id)
-        if (lolUserData.isPresent)
-            lolRepository.deleteById(id)
-
 
     }
 

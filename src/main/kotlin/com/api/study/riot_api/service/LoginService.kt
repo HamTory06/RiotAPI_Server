@@ -37,26 +37,23 @@ class LoginService(
     private var lolUserData: LolUser? = null
     private var valUserData: ValUser? = null
     private var tokenUserData: Token? = null
+    private var UserData: User? = null
 
     fun execute(requestDTO: LoginRequestDTO): UserInformationRequestDto {
         val user = accountRepository.findById(requestDTO.id)
-        if(user.isPresent){
+        if (user.isPresent) {
             userData = user.get()
-            if(securityConfig.passwordEncoder().matches(requestDTO.password, userData.password)){
+            if (securityConfig.passwordEncoder().matches(requestDTO.password, userData.password)) {
                 val lolUser: Optional<LolUser> = lolRepository.findById(userData.idx)
                 val valUser: Optional<ValUser> = valRepository.findById(userData.idx)
                 val token: Optional<Token> = tokenRepository.findById(userData.idx)
-                if (lolUser.isPresent) {
+
+                if (lolUser.isPresent)
                     lolUserData = lolUser.get()
-                }
-
-                if (valUser.isPresent) {
+                if (valUser.isPresent)
                     valUserData = valUser.get()
-                }
-
-                if (token.isPresent) {
+                if (token.isPresent)
                     tokenUserData = token.get()
-                }
 
                 val accountToken = jwtToken.makeJwtAccessToken(userData.idx, userData.mail)
                 val refreshToken = jwtToken.makeJwtRefreshToken()
@@ -74,8 +71,8 @@ class LoginService(
                     id = userData.id,
                     name = userData.name,
                     mail = userData.mail,
-                    lolUserName = userData.lolName,
-                    valUserName = userData.valName,
+                    lolUserId = userData.lolId,
+                    valUserId = userData.valId,
                     token = JwtDto(accountToken, refreshToken)
                 )
             }

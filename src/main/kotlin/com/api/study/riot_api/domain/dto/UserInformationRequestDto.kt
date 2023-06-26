@@ -5,7 +5,7 @@ data class UserInformationRequestDto(
     val id: String,
     val name: String,
     val mail: String,
-    val lolUserName: String?,
-    val valUserName: String?,
+    val lolUserId: Long?,
+    val valUserId: Long?,
     val token: JwtDto
 )

@@ -17,9 +17,17 @@ class User(
     var password: String = "",
     @Column(name = "mail", unique = true, nullable = false)
     var mail: String = "",
-    @Column(name = "lol_name", unique = true)
-    var lolName: String = "",
-    @Column(name = "val_name", unique = true)
-    var valName: String = ""
+    @Column(name = "lol_id", unique = true)
+    var lolId: Long? = null,
+    @Column(name = "val_id", unique = true)
+    var valId: Long? = null,
+
+//    @OneToOne
+//    @JoinColumn(name = "idx")
+//    var lolUser: LolUser? = null,
+//
+//    @OneToOne
+//    @JoinColumn(name = " idx")
+//    var valUser: ValUser? = null
 
 )

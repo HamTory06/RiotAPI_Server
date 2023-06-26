@@ -25,7 +25,7 @@ class SignupService(
             name = request.name,
             id = request.id,
             password = encryptedPassword,
-            mail = request.mail,
+            mail = request.mail
         )
 
         accountRepository.save(userEntity)
