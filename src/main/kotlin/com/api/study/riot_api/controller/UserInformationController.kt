@@ -20,7 +20,7 @@ class UserInformationController {
     @PutMapping("/users/{id}")
     fun userUpdate(
         @RequestHeader("Authorization") accessToken: String,
-        @PathVariable("id") id: Long,
+        @PathVariable("id") id: String,
         @RequestBody updateUserDto: UpdateUserDto
     ): UpdateUserDto {
         return userInformationService.update(updateUserDto, id, accessToken)

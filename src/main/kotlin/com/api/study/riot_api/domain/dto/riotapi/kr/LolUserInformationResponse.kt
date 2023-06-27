@@ -1,6 +1,6 @@
 package com.api.study.riot_api.domain.dto.riotapi.kr
 
-data class UserInformationResponse(
+data class LolUserInformationResponse(
     val accountId: String,
     val id: String,
     val name: String,

@@ -1,6 +1,6 @@
 package com.api.study.riot_api.api
 
-import com.api.study.riot_api.data.network.retrofit.lol.response.user_matches_response.UserMatchesResponse
+import UserMatchesResponse
 import com.api.study.riot_api.domain.dto.riotapi.asiar.RiotUserPuuIdResponse
 import com.api.study.riot_api.domain.dto.riotapi.asiar.UserMatchesIdResponse
 import org.springframework.cloud.openfeign.FeignClient
@@ -35,7 +35,7 @@ interface ExternalAsiaApiClient {
         @RequestParam("count") count: Int
     ): UserMatchesIdResponse
 
-    @GetMapping("/lol/match/v5/matches/{matchId}")
+    @GetMapping("/lol/match/v5/matches/{matchId}", consumes = ["application/json;charset=utf-8"])
     fun getUserMatches(
         @RequestParam(value = "api_key") apiKey: String,
         @PathVariable(value = "matchId") matchId: String

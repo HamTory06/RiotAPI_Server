@@ -1,11 +1,10 @@
 package com.api.study.riot_api.controller
 
-import com.api.study.riot_api.api.ExternalAsiaApiClient
-import com.api.study.riot_api.data.network.retrofit.lol.response.user_matches_response.UserMatchesResponse
-import com.api.study.riot_api.domain.dto.riotapi.kr.UserInformationResponse
+import UserMatchesResponse
+import com.api.study.riot_api.domain.dto.riotapi.kr.LolUserInformationResponse
+import com.api.study.riot_api.domain.entity.MatchInformation
 import com.api.study.riot_api.service.LoginService
 import com.api.study.riot_api.service.RiotAPIService
-import io.swagger.v3.oas.annotations.headers.Header
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -52,10 +51,9 @@ class RiotController {
 
     @GetMapping("/lol/by-name/{username}")
     fun getUserPuuIdName(
-        @RequestHeader("Authorization") accessToken: String,
         @PathVariable("username") username: String
-    ): UserInformationResponse {
-        return riotAPIService.getUserInformation(riotAPIKey, username, accessToken)
+    ): LolUserInformationResponse {
+        return riotAPIService.getLolUserInformation(riotAPIKey, username)
     }
 
     @GetMapping("/lol/match/getMatchId")
@@ -70,7 +68,7 @@ class RiotController {
     @GetMapping("/lol/match/getMatchInformation")
     fun getMatchInformation(
         @RequestParam("matchId") matchId: String
-    ): UserMatchesResponse{
+    ): MatchInformation {
         return riotAPIService.getMatchInformation(matchId)
     }
 

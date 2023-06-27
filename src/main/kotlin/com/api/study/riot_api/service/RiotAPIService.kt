@@ -1,13 +1,13 @@
 package com.api.study.riot_api.service
 
+import UserMatchesResponse
 import com.api.study.riot_api.api.ExternalAsiaApiClient
 import com.api.study.riot_api.api.ExternalKrApiClient
-import com.api.study.riot_api.controller.AccountController
-import com.api.study.riot_api.data.network.retrofit.lol.response.user_matches_response.UserMatchesResponse
-import com.api.study.riot_api.domain.dto.riotapi.kr.UserInformationResponse
-import com.api.study.riot_api.exception.CustomException
-import com.api.study.riot_api.exception.ErrorCode
-import com.api.study.riot_api.security.JwtToken
+import com.api.study.riot_api.domain.dto.riotapi.kr.LolUserInformationResponse
+import com.api.study.riot_api.domain.entity.MatchInformation
+import com.api.study.riot_api.repository.LolRepository
+import com.api.study.riot_api.repository.MatchRepository
+import com.api.study.riot_api.repository.ValRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -16,19 +16,32 @@ import org.springframework.stereotype.Service
 
 @Service
 class RiotAPIService(
+    private val userInformationService: UserInformationService,
     private val externalKrApiClient: ExternalKrApiClient,
+    private val lolRepository: LolRepository,
+    private val valRepository: ValRepository,
+    private val matchRepository: MatchRepository
 ) {
-    private val logger: Logger = LoggerFactory.getLogger(AccountController::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(RiotAPIService::class.java)
 
     @Autowired
     private lateinit var externalAsiaApiClient: ExternalAsiaApiClient
 
     @Value("\${app.apiKey}")
     private val apiKey = ""
-    fun getUserInformation(apiKey: String, userName: String, accessToken: String): UserInformationResponse {
-        val userInformationResponse = externalKrApiClient.getUserInformationName(apiKey, userName)
-        logger.info(externalKrApiClient.getUserInformationName(apiKey, userName).name)
-        return userInformationResponse
+    fun getLolUserInformation(apiKey: String, userName: String): LolUserInformationResponse {
+
+        if (!lolRepository.findByLolUserName(userName).isPresent) {
+            userInformationService.addLolUser(userName)
+        }
+
+        return externalKrApiClient.getUserInformationName(apiKey, userName)
+    }
+
+    fun getValUserInformation(apiKey: String, userName: String){
+        if(!valRepository.findByValUserName(userName).isPresent){
+            userInformationService.addValUser(userName)
+        }
     }
 
     fun getMatchId(puuId: String, start: Int, count: Int): List<String> {
@@ -40,7 +53,27 @@ class RiotAPIService(
         )
     }
 
-    fun getMatchInformation(matchId: String): UserMatchesResponse {
-        return externalAsiaApiClient.getUserMatches(apiKey, matchId)
+    fun getMatchInformation(matchId: String): MatchInformation {
+        if(!matchRepository.findById(matchId).isPresent){
+            val matchInformationData = externalAsiaApiClient.getUserMatches(apiKey, matchId)
+            val matchInformation = MatchInformation(
+                matchId = matchInformationData.metadata.matchId,
+                dataVersion = matchInformationData.metadata.dataVersion,
+                gameName = matchInformationData.info.gameName,
+                gameCreation = matchInformationData.info.gameCreation,
+                gameDuration = matchInformationData.info.gameDuration,
+                gameEndTimestamp = matchInformationData.info.gameEndTimestamp,
+                gameStartTimestamp = matchInformationData.info.gameStartTimestamp,
+                gameMode = matchInformationData.info.gameMode,
+                gameType = matchInformationData.info.gameType,
+                gameVersion = matchInformationData.info.gameVersion,
+                mapId = matchInformationData.info.mapId
+
+            )
+
+            return matchRepository.save(matchInformation)
+        } else {
+            return matchRepository.findById(matchId).get()
+        }
     }
 }

@@ -1,6 +1,6 @@
 package com.api.study.riot_api.service
 
-import com.api.study.riot_api.controller.AccountController
+import com.api.study.riot_api.api.ExternalKrApiClient
 import com.api.study.riot_api.domain.dto.UpdateUserDto
 import com.api.study.riot_api.domain.entity.LolUser
 import com.api.study.riot_api.domain.entity.User
@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import javax.transaction.Transactional
 
 @Service
 class UserInformationService(
@@ -25,6 +24,7 @@ class UserInformationService(
     private var lolRepository: LolRepository,
     private var valRepository: ValRepository,
     private var tokenRepository: TokenRepository,
+    private var externalKrApiClient: ExternalKrApiClient,
     private var jwtToken: JwtToken
 ) {
     @Autowired
@@ -39,57 +39,56 @@ class UserInformationService(
     private var lolUser: LolUser? = null
     private var valUser: ValUser? = null
 
-    @Transactional
-    fun update(userDto: UpdateUserDto, id: Long, accessToken: String): UpdateUserDto {
-
-        val user = accountRepository.findById(id).get()
+    //    @Transactional
+    fun update(userDto: UpdateUserDto, id: String, accessToken: String): UpdateUserDto {
 
         if (jwtToken.validateToken(accessToken)) {
-            jwtToken.makeJwtAccessToken(user.idx, user.mail)
+            throw CustomException(ErrorCode.TOKEN_NOT_FOUND_FORBIDDEN_ERROR)
         }
 
-
-        if (userDto.valName != "" && userDto.valName != null) {
-            val valUserData = ValUser(
-                valUserName = userDto.valName
-            )
-            valRepository.save(valUserData)
-            if (valRepository.findByValUserName(userDto.valName).isPresent)
-                valUser = valRepository.findByValUserName(userDto.valName).get()
+        if (accountRepository.findById(id).isPresent) {
+            userData = accountRepository.findById(id).get()
+        } else {
+            throw CustomException(ErrorCode.USER_NOT_FOUND_BAD_REQUEST)
         }
 
-        if (userDto.lolName != "" && userDto.lolName != null) {
-            val riotLolUserData = riotAPIService.getUserInformation(
-                accessToken = accessToken,
+        //TODO(발로란트는 나중에 롤 완성하고 구현하기)
+//        if (userDto.valName != "" && userDto.valName != null) {
+//            val valUserData = riotAPIService.getValUserInformation(
+//                apiKey = riotAPIKey,
+//                userName = userDto.valName
+//            )
+//            valRepository.save(valUserData)
+//            if (valRepository.findByValUserName(userDto.valName).isPresent)
+//                valUser = valRepository.findByValUserName(userDto.valName).get()
+//        }
+
+        if (userDto.lolName != "" && userDto.lolName != null && !lolRepository.findByLolUserName(userDto.lolName).isPresent) {
+            logger.info("데이터 베이스에 롤유저 정보 없음")
+            val riotLolUserData = riotAPIService.getLolUserInformation(
                 apiKey = riotAPIKey,
                 userName = userDto.lolName
             )
 
             val lolUserData = LolUser(
-                lolUserName = userDto.lolName,
+                lolUserName = riotLolUserData.name,
                 lolUserLevel = riotLolUserData.summonerLevel,
                 lolUserPuuId = riotLolUserData.puuid,
                 lolUserAccountId = riotLolUserData.accountId,
                 lolUserId = riotLolUserData.id
             )
+        }
 
-            logger.info(lolUserData.toString())
-
-            lolRepository.save(
-                lolUserData
-            )
-
-            if (lolRepository.findByLolUserName(userDto.lolName).isPresent)
-                lolUser = lolRepository.findByLolUserName(userDto.lolName).get()
-
+        if (lolRepository.findByLolUserName(userDto.lolName!!).isPresent) {
+            lolUser = lolRepository.findByLolUserName(userDto.lolName).get()
         }
 
         userData = User(
-            idx = user.idx,
-            name = user.name,
-            id = user.id,
-            password = user.password,
-            mail = user.mail,
+            idx = userData.idx,
+            name = userData.name,
+            id = userData.id,
+            password = userData.password,
+            mail = userData.mail,
             lolId = lolUser?.idx,
             valId = valUser?.idx
         )
@@ -100,6 +99,40 @@ class UserInformationService(
 
     }
 
+    fun addValUser(valName: String) {
+        val valUserData = ValUser(
+            valUserName = valName
+        )
+
+        valRepository.save(
+            valUserData
+        )
+
+        if (valRepository.findByValUserName(valName).isPresent)
+            valUser = valRepository.findByValUserName(valName).get()
+    }
+
+    fun addLolUser(lolName: String) {
+        val riotLolUserData = externalKrApiClient.getUserInformationName(
+            apiKey = riotAPIKey,
+            username = lolName
+        )
+
+        val lolUserData = LolUser(
+            lolUserName = riotLolUserData.name,
+            lolUserLevel = riotLolUserData.summonerLevel,
+            lolUserPuuId = riotLolUserData.puuid,
+            lolUserAccountId = riotLolUserData.accountId,
+            lolUserId = riotLolUserData.id
+        )
+
+        lolRepository.save(
+            lolUserData
+        )
+
+        if (lolRepository.findByLolUserName(lolName).isPresent)
+            lolUser = lolRepository.findByLolUserName(lolName).get()
+    }
 
     fun deleteUser(id: Long, accessToken: String) {
         if (jwtToken.validateToken(accessToken)) {
@@ -116,6 +149,4 @@ class UserInformationService(
             tokenRepository.deleteById(id)
 
     }
-
-
 }
