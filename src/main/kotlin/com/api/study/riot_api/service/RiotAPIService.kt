@@ -1,6 +1,5 @@
 package com.api.study.riot_api.service
 
-import UserMatchesResponse
 import com.api.study.riot_api.api.ExternalAsiaApiClient
 import com.api.study.riot_api.api.ExternalKrApiClient
 import com.api.study.riot_api.domain.dto.riotapi.kr.LolUserInformationResponse
@@ -54,9 +53,9 @@ class RiotAPIService(
     }
 
     fun getMatchInformation(matchId: String): MatchInformation {
-        if(!matchRepository.findById(matchId).isPresent){
+        if(!matchRepository.findById(matchId).isPresent) {
             val matchInformationData = externalAsiaApiClient.getUserMatches(apiKey, matchId)
-            val matchInformation = MatchInformation(
+            return MatchInformation(
                 matchId = matchInformationData.metadata.matchId,
                 dataVersion = matchInformationData.metadata.dataVersion,
                 gameName = matchInformationData.info.gameName,
@@ -68,10 +67,7 @@ class RiotAPIService(
                 gameType = matchInformationData.info.gameType,
                 gameVersion = matchInformationData.info.gameVersion,
                 mapId = matchInformationData.info.mapId
-
             )
-
-            return matchRepository.save(matchInformation)
         } else {
             return matchRepository.findById(matchId).get()
         }
