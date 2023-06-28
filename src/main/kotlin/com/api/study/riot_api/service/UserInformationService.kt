@@ -80,7 +80,6 @@ class UserInformationService(
             name = userData.name,
             id = userData.id,
             password = userData.password,
-            mail = userData.mail,
             lolId = lolUser?.idx,
             valId = valUser?.idx
         )

@@ -54,7 +54,7 @@ class LoginService(
                 if (token.isPresent)
                     tokenUserData = token.get()
 
-                val accountToken = jwtToken.makeJwtAccessToken(userData.idx, userData.mail)
+                val accountToken = jwtToken.makeJwtAccessToken(userData.idx, userData.id)
                 val refreshToken = jwtToken.makeJwtRefreshToken()
 
                 tokenRepository.save(
@@ -69,7 +69,6 @@ class LoginService(
                     idx = userData.idx,
                     id = userData.id,
                     name = userData.name,
-                    mail = userData.mail,
                     lolUserId = userData.lolId,
                     valUserId = userData.valId,
                     token = JwtDto(accountToken, refreshToken)

@@ -42,7 +42,7 @@ class AccountController(
         return signupRequestDTO
     }
 
-    @PostMapping("/check/sameId")
+    @GetMapping("/check/sameId")
     fun checkSameId(
         @RequestParam("id") id: String
     ): SameIdDto {
