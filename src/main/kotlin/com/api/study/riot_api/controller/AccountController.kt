@@ -1,9 +1,10 @@
 package com.api.study.riot_api.controller
 
-import com.api.study.riot_api.domain.dto.JwtDto
-import com.api.study.riot_api.domain.dto.LoginRequestDTO
+import com.api.study.riot_api.domain.dto.LoginRequestDto
 import com.api.study.riot_api.domain.dto.LoginResponse
+import com.api.study.riot_api.domain.dto.SameIdDto
 import com.api.study.riot_api.domain.dto.SignupRequestDto
+import com.api.study.riot_api.repository.AccountRepository
 import com.api.study.riot_api.service.JwtService
 import com.api.study.riot_api.service.LoginService
 import com.api.study.riot_api.service.SignupService
@@ -14,7 +15,9 @@ import javax.validation.Valid
 
 @RestController
 @RequestMapping("/api/account")
-class AccountController {
+class AccountController(
+    private val accountRepository: AccountRepository
+) {
     @Autowired
     private lateinit var signupService: SignupService
     @Autowired
@@ -26,7 +29,7 @@ class AccountController {
 
     @PostMapping("/login")
     fun login(
-        @RequestBody @Valid loginRequestDTO: LoginRequestDTO,
+        @RequestBody @Valid loginRequestDTO: LoginRequestDto,
     ): LoginResponse {
         return LoginResponse(loginService.execute(loginRequestDTO), "200")
     }
@@ -39,12 +42,20 @@ class AccountController {
         return signupRequestDTO
     }
 
-    @DeleteMapping("/delete-user/{idx}")
+    @PostMapping("/check/sameId")
+    fun checkSameId(
+        @RequestParam("id") id: String
+    ): SameIdDto {
+        return SameIdDto(accountRepository.findById(id).isPresent)
+    }
+
+
+    @DeleteMapping("/delete-user/{id}")
     fun deleteUser(
         @RequestHeader("Authorization") accessToken: String,
-        @PathVariable("idx") idx: Long
+        @PathVariable("id") id: String
     ){
-        userInformationService.deleteUser(idx, accessToken)
+        userInformationService.deleteUser(id, accessToken)
     }
 
     @PostMapping("/refresh")
