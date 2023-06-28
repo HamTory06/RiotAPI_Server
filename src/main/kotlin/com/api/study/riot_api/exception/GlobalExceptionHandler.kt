@@ -1,10 +1,8 @@
 package com.api.study.riot_api.exception
 
-import com.api.study.riot_api.controller.AccountController
 import com.api.study.riot_api.domain.dto.ErrorDto
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springdoc.core.RequestBodyService
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.http.HttpStatus
@@ -12,12 +10,10 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
-import org.springframework.web.server.MethodNotAllowedException
-import javax.validation.ConstraintViolationException
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
-    private val LOGGER: Logger = LoggerFactory.getLogger(AccountController::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(GlobalExceptionHandler::class.java)
 
     @ExceptionHandler(CustomException::class)
     fun handleIllegalArgumentException(ex: CustomException): ResponseEntity<ErrorDto> {

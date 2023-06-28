@@ -5,7 +5,7 @@ import org.springframework.cloud.openfeign.FeignClient
 import org.springframework.web.bind.annotation.GetMapping
 
 
-@FeignClient(name = "ddragon", url = "https://ddragon.api.riotgames.com/")
+@FeignClient(name = "ddragon", url = "https://ddragon.api.riotgames.com/", configuration = [])
 interface ExternalDdragonApiClient {
     @GetMapping("/api/versions.json")
     fun getLolVersions(): LolVersionsResponse

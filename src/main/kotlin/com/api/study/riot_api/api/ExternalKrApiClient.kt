@@ -1,12 +1,13 @@
 package com.api.study.riot_api.api
 
 import com.api.study.riot_api.domain.dto.riotapi.kr.LolUserInformationResponse
+import com.api.study.riot_api.exception.FeignCustomException
 import org.springframework.cloud.openfeign.FeignClient
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 
-@FeignClient(name = "kr", url = "https://kr.api.riotgames.com/")
+@FeignClient(name = "kr", url = "https://kr.api.riotgames.com/",configuration = [FeignCustomException::class])
 interface ExternalKrApiClient {
 
     @GetMapping("lol/summoner/v4/summoners/by-name/{username}")
