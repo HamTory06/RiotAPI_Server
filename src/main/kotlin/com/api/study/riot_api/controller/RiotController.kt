@@ -2,6 +2,7 @@ package com.api.study.riot_api.controller
 
 import UserMatchesResponse
 import com.api.study.riot_api.domain.dto.riotapi.kr.LolUserInformationResponse
+import com.api.study.riot_api.domain.entity.LolUser
 import com.api.study.riot_api.domain.entity.MatchInformation
 import com.api.study.riot_api.service.LoginService
 import com.api.study.riot_api.service.RiotAPIService
@@ -26,8 +27,7 @@ class RiotController {
     @Autowired
     private lateinit var riotAPIService: RiotAPIService
 
-
-    private val logger: Logger = LoggerFactory.getLogger(LoginService::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(RiotController::class.java)
 
 
     @GetMapping("/riot.txt")
@@ -52,7 +52,7 @@ class RiotController {
     @GetMapping("/lol/by-name/{username}")
     fun getUserPuuIdName(
         @PathVariable("username") username: String
-    ): LolUserInformationResponse {
+    ): LolUser {
         return riotAPIService.getLolUserInformation(riotAPIKey, username)
     }
 
@@ -65,9 +65,9 @@ class RiotController {
         return riotAPIService.getMatchId(puuId, start, count)
     }
 
-    @GetMapping("/lol/match/getMatchInformation")
+    @GetMapping("/lol/match/getMatchInformation/{matchId}")
     fun getMatchInformation(
-        @RequestParam("matchId") matchId: String
+        @PathVariable("matchId") matchId: String
     ): MatchInformation {
         return riotAPIService.getMatchInformation(matchId)
     }

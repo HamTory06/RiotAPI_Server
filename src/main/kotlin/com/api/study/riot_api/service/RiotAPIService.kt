@@ -2,11 +2,11 @@ package com.api.study.riot_api.service
 
 import com.api.study.riot_api.api.ExternalAsiaApiClient
 import com.api.study.riot_api.api.ExternalKrApiClient
-import com.api.study.riot_api.domain.dto.riotapi.kr.LolUserInformationResponse
+import com.api.study.riot_api.domain.entity.LolUser
 import com.api.study.riot_api.domain.entity.MatchInformation
-import com.api.study.riot_api.repository.LolRepository
-import com.api.study.riot_api.repository.MatchRepository
-import com.api.study.riot_api.repository.ValRepository
+import com.api.study.riot_api.domain.entity.Participants
+import com.api.study.riot_api.domain.entity.ParticipantsUserPuuid
+import com.api.study.riot_api.repository.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -19,7 +19,9 @@ class RiotAPIService(
     private val externalKrApiClient: ExternalKrApiClient,
     private val lolRepository: LolRepository,
     private val valRepository: ValRepository,
-    private val matchRepository: MatchRepository
+    private val matchRepository: MatchRepository,
+    private val participantsRepository: ParticipantsRepository,
+    private val participantsUserPuuidRepository: ParticipantsUserPuuidRepository
 ) {
     private val logger: Logger = LoggerFactory.getLogger(RiotAPIService::class.java)
 
@@ -28,13 +30,13 @@ class RiotAPIService(
 
     @Value("\${app.apiKey}")
     private val apiKey = ""
-    fun getLolUserInformation(apiKey: String, userName: String): LolUserInformationResponse {
+    fun getLolUserInformation(apiKey: String, userName: String): LolUser {
 
         if (!lolRepository.findByLolUserName(userName).isPresent) {
             userInformationService.addLolUser(userName)
         }
 
-        return externalKrApiClient.getUserInformationName(apiKey, userName)
+        return lolRepository.findByLolUserName(userName).get()
     }
 
     fun getValUserInformation(apiKey: String, userName: String){
@@ -55,7 +57,7 @@ class RiotAPIService(
     fun getMatchInformation(matchId: String): MatchInformation {
         if(!matchRepository.findById(matchId).isPresent) {
             val matchInformationData = externalAsiaApiClient.getUserMatches(apiKey, matchId)
-            return MatchInformation(
+            val matchInformation = MatchInformation(
                 matchId = matchInformationData.metadata.matchId,
                 dataVersion = matchInformationData.metadata.dataVersion,
                 gameName = matchInformationData.info.gameName,
@@ -68,6 +70,149 @@ class RiotAPIService(
                 gameVersion = matchInformationData.info.gameVersion,
                 mapId = matchInformationData.info.mapId
             )
+            matchRepository.save(matchInformation)
+            val participantsUserPuuId = ParticipantsUserPuuid(
+                matchId = matchInformationData.metadata.matchId,
+                puuid_0 = matchInformationData.metadata.participants[0],
+                puuid_1 = matchInformationData.metadata.participants[1],
+                puuid_2 = matchInformationData.metadata.participants[2],
+                puuid_3 = matchInformationData.metadata.participants[3],
+                puuid_4 = matchInformationData.metadata.participants[4],
+                puuid_5 = matchInformationData.metadata.participants[5],
+                puuid_6 = matchInformationData.metadata.participants[6],
+                puuid_7 = matchInformationData.metadata.participants[7],
+                puuid_8 = matchInformationData.metadata.participants[8],
+                puuid_9 = matchInformationData.metadata.participants[9]
+            )
+            participantsUserPuuidRepository.save(participantsUserPuuId)
+            for(i in 0..9){
+                val participants = Participants(
+                    idx = 0L,
+                    allInPings = matchInformationData.info.participants[i].allInPings,
+                    assistMePings =  matchInformationData.info.participants[i].assistMePings,
+                    assists =  matchInformationData.info.participants[i].assists,
+                    baitPings =  matchInformationData.info.participants[i].baitPings,
+                    baronKills = matchInformationData.info.participants[i].baronKills,
+                    basicPings = matchInformationData.info.participants[i].basicPings,
+                    bountyLevel =  matchInformationData.info.participants[i].bountyLevel,
+                    physicalDamageDealt =  matchInformationData.info.participants[i].physicalDamageDealt,
+                    physicalDamageDealtToChampions = matchInformationData.info.participants[i].physicalDamageDealtToChampions,
+                    physicalDamageTaken = matchInformationData.info.participants[i].physicalDamageTaken,
+                    profileIcon =  matchInformationData.info.participants[i].profileIcon,
+                    pushPings = matchInformationData.info.participants[i].pushPings,
+                    puuid = matchInformationData.info.participants[i].puuid,
+                    quadraKills = matchInformationData.info.participants[i].quadraKills,
+                    riotIdName = matchInformationData.info.participants[i].riotIdName,
+                    riotIdTagline = matchInformationData.info.participants[i].riotIdTagline,
+                    role = matchInformationData.info.participants[i].role,
+                    sightWardsBoughtInGame = matchInformationData.info.participants[i].sightWardsBoughtInGame,
+                    spell1Casts = matchInformationData.info.participants[i].spell1Casts,
+                    spell2Casts = matchInformationData.info.participants[i].spell2Casts,
+                    spell3Casts = matchInformationData.info.participants[i].spell3Casts,
+                    spell4Casts = matchInformationData.info.participants[i].spell4Casts,
+                    summoner1Casts = matchInformationData.info.participants[i].summoner1Casts,
+                    summoner1Id = matchInformationData.info.participants[i].summoner1Id,
+                    summoner2Casts = matchInformationData.info.participants[i].summoner2Casts,
+                    summoner2Id = matchInformationData.info.participants[i].summoner2Id,
+                    summonerId = matchInformationData.info.participants[i].summonerId,
+                    summonerLevel = matchInformationData.info.participants[i].summonerLevel,
+                    summonerName = matchInformationData.info.participants[i].summonerName,
+                    teamEarlySurrendered = matchInformationData.info.participants[i].teamEarlySurrendered,
+                    teamId = matchInformationData.info.participants[i].teamId,
+                    teamPosition = matchInformationData.info.participants[i].teamPosition,
+                    timeCCingOthers = matchInformationData.info.participants[i].timeCCingOthers,
+                    timePlayed = matchInformationData.info.participants[i].timePlayed,
+                    totalAllyJungleMinionsKilled = matchInformationData.info.participants[i].totalAllyJungleMinionsKilled,
+                    totalDamageDealt = matchInformationData.info.participants[i].totalDamageDealt,
+                    totalDamageDealtToChampions = matchInformationData.info.participants[i].totalDamageDealtToChampions,
+                    totalDamageShieldedOnTeammates = matchInformationData.info.participants[i].totalDamageShieldedOnTeammates,
+                    totalDamageTaken = matchInformationData.info.participants[i].totalDamageTaken,
+                    totalHeal = matchInformationData.info.participants[i].totalHeal,
+                    totalHealsOnTeammates = matchInformationData.info.participants[i].totalHealsOnTeammates,
+                    totalEnemyJungleMinionsKilled = matchInformationData.info.participants[i].totalEnemyJungleMinionsKilled,
+                    totalMinionsKilled = matchInformationData.info.participants[i].totalMinionsKilled,
+                    totalTimeCCDealt = matchInformationData.info.participants[i].totalTimeCCDealt,
+                    totalTimeSpentDead = matchInformationData.info.participants[i].totalTimeSpentDead,
+                    totalUnitsHealed = matchInformationData.info.participants[i].totalUnitsHealed,
+                    tripleKills = matchInformationData.info.participants[i].tripleKills,
+                    turretTakedowns = matchInformationData.info.participants[i].turretTakedowns,
+                    trueDamageDealt = matchInformationData.info.participants[i].trueDamageDealt,
+                    trueDamageDealtToChampions = matchInformationData.info.participants[i].trueDamageDealtToChampions,
+                    trueDamageTaken = matchInformationData.info.participants[i].trueDamageTaken,
+                    turretKills = matchInformationData.info.participants[i].turretKills,
+                    turretsLost = matchInformationData.info.participants[i].turretsLost,
+                    unrealKills = matchInformationData.info.participants[i].unrealKills,
+                    visionClearedPings = matchInformationData.info.participants[i].visionClearedPings,
+                    visionScore = matchInformationData.info.participants[i].visionScore,
+                    visionWardsBoughtInGame = matchInformationData.info.participants[i].visionWardsBoughtInGame,
+                    wardsKilled = matchInformationData.info.participants[i].wardsKilled,
+                    wardsPlaced = matchInformationData.info.participants[i].wardsPlaced,
+                    win = matchInformationData.info.participants[i].win,
+                    champExperience = matchInformationData.info.participants[i].champExperience,
+                    championId = matchInformationData.info.participants[i].championId,
+                    championName = matchInformationData.info.participants[i].championName,
+                    championTransform = matchInformationData.info.participants[i].championTransform,
+                    champLevel = matchInformationData.info.participants[i].champLevel,
+                    commandPings = matchInformationData.info.participants[i].commandPings,
+                    consumablesPurchased = matchInformationData.info.participants[i].consumablesPurchased,
+                    damageDealtToBuildings = matchInformationData.info.participants[i].damageDealtToBuildings,
+                    damageDealtToObjectives = matchInformationData.info.participants[i].damageDealtToObjectives,
+                    damageDealtToTurrets = matchInformationData.info.participants[i].damageDealtToTurrets,
+                    damageSelfMitigated = matchInformationData.info.participants[i].damageSelfMitigated,
+                    dangerPings = matchInformationData.info.participants[i].dangerPings,
+                    deaths = matchInformationData.info.participants[i].deaths,
+                    detectorWardsPlaced = matchInformationData.info.participants[i].detectorWardsPlaced,
+                    doubleKills = matchInformationData.info.participants[i].doubleKills,
+                    dragonKills = matchInformationData.info.participants[i].dragonKills,
+                    eligibleForProgression = matchInformationData.info.participants[i].eligibleForProgression,
+                    enemyMissingPings = matchInformationData.info.participants[i].enemyMissingPings,
+                    enemyVisionPings = matchInformationData.info.participants[i].enemyVisionPings,
+                    firstBloodAssist = matchInformationData.info.participants[i].firstBloodAssist,
+                    firstBloodKill = matchInformationData.info.participants[i].firstBloodKill,
+                    firstTowerAssist = matchInformationData.info.participants[i].firstTowerAssist,
+                    firstTowerKill = matchInformationData.info.participants[i].firstTowerKill,
+                    gameEndedInEarlySurrender = matchInformationData.info.participants[i].gameEndedInEarlySurrender,
+                    gameEndedInSurrender = matchInformationData.info.participants[i].gameEndedInSurrender,
+                    getBackPings = matchInformationData.info.participants[i].getBackPings,
+                    goldEarned = matchInformationData.info.participants[i].goldEarned,
+                    goldSpent = matchInformationData.info.participants[i].goldSpent,
+                    holdPings = matchInformationData.info.participants[i].holdPings,
+                    individualPosition = matchInformationData.info.participants[i].individualPosition,
+                    inhibitorKills = matchInformationData.info.participants[i].inhibitorKills,
+                    inhibitorsLost = matchInformationData.info.participants[i].inhibitorsLost,
+                    inhibitorTakedowns = matchInformationData.info.participants[i].inhibitorTakedowns,
+                    item0 = matchInformationData.info.participants[i].item0,
+                    item1 = matchInformationData.info.participants[i].item1,
+                    item2 = matchInformationData.info.participants[i].item2,
+                    item3 = matchInformationData.info.participants[i].item3,
+                    item4 = matchInformationData.info.participants[i].item4,
+                    item5 = matchInformationData.info.participants[i].item5,
+                    item6 = matchInformationData.info.participants[i].item6,
+                    itemsPurchased = matchInformationData.info.participants[i].itemsPurchased,
+                    killingSprees = matchInformationData.info.participants[i].killingSprees,
+                    kills = matchInformationData.info.participants[i].kills,
+                    lane = matchInformationData.info.participants[i].lane,
+                    largestCriticalStrike = matchInformationData.info.participants[i].largestCriticalStrike,
+                    largestKillingSpree = matchInformationData.info.participants[i].largestKillingSpree,
+                    largestMultiKill = matchInformationData.info.participants[i].largestMultiKill,
+                    longestTimeSpentLiving = matchInformationData.info.participants[i].longestTimeSpentLiving,
+                    magicDamageDealt = matchInformationData.info.participants[i].magicDamageDealt,
+                    magicDamageDealtToChampions = matchInformationData.info.participants[i].magicDamageDealtToChampions,
+                    magicDamageTaken = matchInformationData.info.participants[i].magicDamageTaken,
+                    neutralMinionsKilled = matchInformationData.info.participants[i].neutralMinionsKilled,
+                    nexusLost = matchInformationData.info.participants[i].nexusLost,
+                    needVisionPings = matchInformationData.info.participants[i].needVisionPings,
+                    nexusKills = matchInformationData.info.participants[i].nexusKills,
+                    nexusTakedowns = matchInformationData.info.participants[i].nexusTakedowns,
+                    objectivesStolen = matchInformationData.info.participants[i].objectivesStolen,
+                    objectivesStolenAssists = matchInformationData.info.participants[i].objectivesStolenAssists,
+                    onMyWayPings = matchInformationData.info.participants[i].onMyWayPings,
+                    participantId = matchInformationData.info.participants[i].participantId,
+                    pentaKills = matchInformationData.info.participants[i].pentaKills
+                )
+                participantsRepository.save(participants)
+            }
+            return matchInformation
         } else {
             return matchRepository.findById(matchId).get()
         }

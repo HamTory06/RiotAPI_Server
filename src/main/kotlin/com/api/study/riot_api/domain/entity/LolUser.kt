@@ -13,5 +13,4 @@ class LolUser (
     var lolUserPuuId: String? = null,
     var lolUserId: String? = null,
     var lolUserAccountId: String? = null,
-
 )

@@ -1,7 +1,8 @@
 package com.api.study.riot_api.domain.dto.riotapi.asiar.user_matches_response
 
+
 data class Challenges(
-    val `12AssistStreakCount`: Int,
+    val assist12StreakCount: Int,
     val abilityUses: Int,
     val acesBefore15Minutes: Int,
     val alliedJungleMonsterKills: Int,

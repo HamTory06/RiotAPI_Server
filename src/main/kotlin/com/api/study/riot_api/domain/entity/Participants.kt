@@ -9,7 +9,7 @@ import javax.persistence.Id
 class Participants (
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val idx: Long = 0L,
+    val idx: Long,
     val allInPings: Int,
     val assistMePings: Int,
     val assists: Int,

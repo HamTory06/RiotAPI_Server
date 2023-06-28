@@ -69,14 +69,6 @@ class UserInformationService(
                 apiKey = riotAPIKey,
                 userName = userDto.lolName
             )
-
-            val lolUserData = LolUser(
-                lolUserName = riotLolUserData.name,
-                lolUserLevel = riotLolUserData.summonerLevel,
-                lolUserPuuId = riotLolUserData.puuid,
-                lolUserAccountId = riotLolUserData.accountId,
-                lolUserId = riotLolUserData.id
-            )
         }
 
         if (lolRepository.findByLolUserName(userDto.lolName!!).isPresent) {
