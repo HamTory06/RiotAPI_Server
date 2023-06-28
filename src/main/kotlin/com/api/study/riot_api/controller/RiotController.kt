@@ -1,10 +1,7 @@
 package com.api.study.riot_api.controller
 
-import UserMatchesResponse
-import com.api.study.riot_api.domain.dto.riotapi.kr.LolUserInformationResponse
 import com.api.study.riot_api.domain.entity.LolUser
 import com.api.study.riot_api.domain.entity.MatchInformation
-import com.api.study.riot_api.service.LoginService
 import com.api.study.riot_api.service.RiotAPIService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -58,11 +55,11 @@ class RiotController {
 
     @GetMapping("/lol/match/getMatchId")
     fun getMatchId(
-        @RequestParam("puuId") puuId: String,
+        @RequestParam("username") username: String,
         @RequestParam("start") start: Int,
         @RequestParam("count") count: Int
     ): List<String>{
-        return riotAPIService.getMatchId(puuId, start, count)
+        return riotAPIService.getMatchId(start, count, username)
     }
 
     @GetMapping("/lol/match/getMatchInformation/{matchId}")

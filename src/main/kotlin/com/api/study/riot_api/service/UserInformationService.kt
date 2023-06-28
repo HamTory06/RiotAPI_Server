@@ -126,19 +126,19 @@ class UserInformationService(
             lolUser = lolRepository.findByLolUserName(lolName).get()
     }
 
-    fun deleteUser(id: Long, accessToken: String) {
+    fun deleteUser(id: String, accessToken: String) {
         if (jwtToken.validateToken(accessToken)) {
             throw CustomException(ErrorCode.TOKEN_NOT_FOUND_FORBIDDEN_ERROR)
         }
 
         val userData = accountRepository.findById(id)
-        val tokenData = tokenRepository.findById(id)
+        val tokenData = tokenRepository.findById(userData.get().idx)
         if (userData.isPresent)
-            accountRepository.deleteById(id)
+            accountRepository.deleteById(userData.get().idx)
         else
             throw CustomException(ErrorCode.NOT_FOUND_USER_IDX_BAD_REQUEST)
         if (tokenData.isPresent)
-            tokenRepository.deleteById(id)
+            tokenRepository.deleteById(userData.get().idx)
 
     }
 }
