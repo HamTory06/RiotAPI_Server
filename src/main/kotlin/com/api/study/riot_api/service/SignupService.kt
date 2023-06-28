@@ -1,6 +1,5 @@
 package com.api.study.riot_api.service
 
-import com.api.study.riot_api.controller.AccountController
 import com.api.study.riot_api.domain.dto.SignupRequestDto
 import com.api.study.riot_api.domain.entity.User
 import com.api.study.riot_api.exception.CustomException
@@ -25,7 +24,6 @@ class SignupService(
             name = request.name,
             id = request.id,
             password = encryptedPassword,
-            mail = request.mail
         )
 
         accountRepository.save(userEntity)

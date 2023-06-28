@@ -29,7 +29,7 @@ class RiotAPIService(
     private lateinit var externalAsiaApiClient: ExternalAsiaApiClient
 
     @Value("\${app.apiKey}")
-    private val apiKey = ""
+    private val riotAPIKey = ""
     fun getLolUserInformation(apiKey: String, userName: String): LolUser {
 
         if (!lolRepository.findByLolUserName(userName).isPresent) {
@@ -45,18 +45,29 @@ class RiotAPIService(
         }
     }
 
-    fun getMatchId(puuId: String, start: Int, count: Int): List<String> {
+    fun getMatchId(start: Int, count: Int, userName: String): List<String> {
+        val puuId: String? = if(lolRepository.findByLolUserName(userName).isPresent){
+            val lolUserData = lolRepository.findByLolUserName(userName).get()
+            lolUserData.lolUserPuuId
+        } else {
+            val riotLolUserData = getLolUserInformation(
+                apiKey = riotAPIKey,
+                userName = userName
+            )
+            riotLolUserData.lolUserPuuId
+        }
+
         return externalAsiaApiClient.getMatchId(
-            apiKey = apiKey,
-            puuId = puuId,
+            apiKey = riotAPIKey,
             start = 0,
-            count = 10
+            count = 10,
+            puuId = puuId!!
         )
     }
 
     fun getMatchInformation(matchId: String): MatchInformation {
         if(!matchRepository.findById(matchId).isPresent) {
-            val matchInformationData = externalAsiaApiClient.getUserMatches(apiKey, matchId)
+            val matchInformationData = externalAsiaApiClient.getUserMatches(riotAPIKey, matchId)
             val matchInformation = MatchInformation(
                 matchId = matchInformationData.metadata.matchId,
                 dataVersion = matchInformationData.metadata.dataVersion,

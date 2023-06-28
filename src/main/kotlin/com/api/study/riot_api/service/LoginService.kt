@@ -2,7 +2,7 @@ package com.api.study.riot_api.service
 
 import com.api.study.riot_api.config.SecurityConfig
 import com.api.study.riot_api.domain.dto.JwtDto
-import com.api.study.riot_api.domain.dto.LoginRequestDTO
+import com.api.study.riot_api.domain.dto.LoginRequestDto
 import com.api.study.riot_api.domain.dto.UserInformationRequestDto
 import com.api.study.riot_api.domain.entity.LolUser
 import com.api.study.riot_api.domain.entity.Token
@@ -19,7 +19,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.util.*
-import javax.swing.text.html.Option
 
 @Service
 class LoginService(
@@ -39,7 +38,7 @@ class LoginService(
     private var tokenUserData: Token? = null
     private var UserData: User? = null
 
-    fun execute(requestDTO: LoginRequestDTO): UserInformationRequestDto {
+    fun execute(requestDTO: LoginRequestDto): UserInformationRequestDto {
         val user = accountRepository.findById(requestDTO.id)
         if (user.isPresent) {
             userData = user.get()
