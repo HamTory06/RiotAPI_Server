@@ -50,7 +50,7 @@ class RiotController {
     fun getUserPuuIdName(
         @PathVariable("username") username: String
     ): LolUser {
-        return riotAPIService.getLolUserInformation(riotAPIKey, username)
+        return riotAPIService.getLolUserInformation(username)
     }
 
     @GetMapping("/lol/match/getMatchId")
