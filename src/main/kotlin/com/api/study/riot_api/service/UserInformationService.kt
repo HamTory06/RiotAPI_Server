@@ -14,7 +14,6 @@ import com.api.study.riot_api.repository.ValRepository
 import com.api.study.riot_api.security.JwtToken
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
@@ -27,8 +26,6 @@ class UserInformationService(
     private var externalKrApiClient: ExternalKrApiClient,
     private var jwtToken: JwtToken
 ) {
-    @Autowired
-    private lateinit var riotAPIService: RiotAPIService
 
     private val logger: Logger = LoggerFactory.getLogger(UserInformationService::class.java)
 
@@ -65,10 +62,7 @@ class UserInformationService(
 
         if (userDto.lolName != "" && userDto.lolName != null && !lolRepository.findByLolUserName(userDto.lolName).isPresent) {
             logger.info("데이터 베이스에 롤유저 정보 없음")
-            val riotLolUserData = riotAPIService.getLolUserInformation(
-                apiKey = riotAPIKey,
-                userName = userDto.lolName
-            )
+            lolRepository.findByLolUserName(userDto.lolName).get()
         }
 
         if (lolRepository.findByLolUserName(userDto.lolName!!).isPresent) {

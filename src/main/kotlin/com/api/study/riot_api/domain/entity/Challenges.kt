@@ -1,16 +1,15 @@
 package com.api.study.riot_api.domain.entity
 
-import javax.persistence.Column
-import javax.persistence.Entity
-import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType
-import javax.persistence.Id
+import javax.persistence.*
 
 @Entity
+@Table(name  = "challenges")
 class Challenges (
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val idx: Long = 0L,
+    val userName: String,
+    val matchId: String,
     @Column(name = "12_assist_streak_count")
     val assist12StreakCount: Int,
     val abilityUses: Int,
@@ -21,7 +20,7 @@ class Challenges (
     val bountyGold: Int,
     val buffsStolen: Int,
     val completeSupportQuestInTime: Int,
-    val controlWardTimeCoverageInRiverOrEnemyHalf: Float,
+    val controlWardTimeCoverageInRiverOrEnemyHalf: Double,
     val controlWardsPlaced: Int,
     val damagePerMinute: Double,
     val damageTakenOnTeamPercentage: Double,
@@ -30,10 +29,9 @@ class Challenges (
     val dodgeSkillShotsSmallWindow: Int,
     val doubleAces: Int,
     val dragonTakedowns: Int,
-    val earliestBaron: Float,
-    val earliestDragonTakedown: Float,
+    val earliestDragonTakedown: Double,
     val earlyLaningPhaseGoldExpAdvantage: Int,
-    val effectiveHealAndShielding: Float,
+    val effectiveHealAndShielding: Double,
     val elderDragonKillsWithOpposingSoul: Int,
     val elderDragonMultikills: Int,
     val enemyChampionImmobilizations: Int,
@@ -56,7 +54,7 @@ class Challenges (
     val immobilizeAndKillWithAlly: Int,
     val initialBuffCount: Int,
     val initialCrabCount: Int,
-    val jungleCsBefore10Minutes: Int,
+    val jungleCsBefore10Minutes: Double,
     val junglerKillsEarlyJungle: Int,
     val junglerTakedownsNearDamagedEpicMonster: Int,
     val kda: Float,
@@ -77,16 +75,15 @@ class Challenges (
     val legendaryCount: Int,
     val lostAnInhibitor: Int,
     val maxCsAdvantageOnLaneOpponent: Double,
-    val maxKillDeficit: Double,
-    val maxLevelLeadLaneOpponent: Double,
-    val mejaisFullStackInTime: Double,
-    val moreEnemyJungleThanOpponent: Float,
+    val maxKillDeficit: Int,
+    val maxLevelLeadLaneOpponent: Int,
+    val mejaisFullStackInTime: Int,
+    val moreEnemyJungleThanOpponent: Double,
     val multiKillOneSpell: Int,
     val multiTurretRiftHeraldCount: Int,
     val multikills: Int,
     val multikillsAfterAggressiveFlash: Int,
     val mythicItemUsed: Int,
-    val mythicIouterTurretExecutesBefore10MinutestemUsed: Int,
     val outnumberedKills: Int,
     val outnumberedNexusKill: Int,
     val perfectDragonSoulsTaken: Int,
@@ -99,7 +96,6 @@ class Challenges (
     val riftHeraldTakedowns: Int,
     val saveAllyFromDeath: Int,
     val scuttleCrabKills: Int,
-    val shortestTimeToAceFromFirstTakedown: Float,
     val skillshotsDodged: Int,
     val skillshotsHit: Int,
     val snowballsHit: Int,
@@ -128,8 +124,8 @@ class Challenges (
     val turretsTakenWithRiftHerald: Int,
     val twentyMinionsIn3SecondsCount: Int,
     val unseenRecalls: Int,
-    val visionScoreAdvantageLaneOpponent: Int,
-    val visionScorePerMinute: Int,
+    val visionScoreAdvantageLaneOpponent: Double,
+    val visionScorePerMinute: Double,
     val wardTakedowns: Int,
     val wardTakedownsBefore20M: Int,
     val wardsGuarded: Int,

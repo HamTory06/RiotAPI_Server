@@ -9,23 +9,21 @@ import com.api.study.riot_api.service.JwtService
 import com.api.study.riot_api.service.LoginService
 import com.api.study.riot_api.service.SignupService
 import com.api.study.riot_api.service.UserInformationService
-import org.springframework.beans.factory.annotation.Autowired
+import lombok.RequiredArgsConstructor
 import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/account")
 class AccountController(
-    private val accountRepository: AccountRepository
+    private var accountRepository: AccountRepository,
+    private var signupService: SignupService,
+    private var loginService: LoginService,
+    private var jwtService: JwtService,
+    private var userInformationService: UserInformationService
 ) {
-    @Autowired
-    private lateinit var signupService: SignupService
-    @Autowired
-    private lateinit var loginService: LoginService
-    @Autowired
-    private lateinit var jwtService: JwtService
-    @Autowired
-    private lateinit var userInformationService: UserInformationService
+
 
     @PostMapping("/login")
     fun login(

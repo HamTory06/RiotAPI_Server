@@ -1,11 +1,7 @@
 package com.api.study.riot_api.service
 
 import com.api.study.riot_api.api.ExternalAsiaApiClient
-import com.api.study.riot_api.api.ExternalKrApiClient
-import com.api.study.riot_api.domain.entity.LolUser
-import com.api.study.riot_api.domain.entity.MatchInformation
-import com.api.study.riot_api.domain.entity.Participants
-import com.api.study.riot_api.domain.entity.ParticipantsUserPuuid
+import com.api.study.riot_api.domain.entity.*
 import com.api.study.riot_api.repository.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -16,12 +12,12 @@ import org.springframework.stereotype.Service
 @Service
 class RiotAPIService(
     private val userInformationService: UserInformationService,
-    private val externalKrApiClient: ExternalKrApiClient,
     private val lolRepository: LolRepository,
     private val valRepository: ValRepository,
     private val matchRepository: MatchRepository,
     private val participantsRepository: ParticipantsRepository,
-    private val participantsUserPuuidRepository: ParticipantsUserPuuidRepository
+    private val participantsUserPuuidRepository: ParticipantsUserPuuidRepository,
+    private val challengesRepository: ChallengesRepository
 ) {
     private val logger: Logger = LoggerFactory.getLogger(RiotAPIService::class.java)
 
@@ -59,8 +55,8 @@ class RiotAPIService(
 
         return externalAsiaApiClient.getMatchId(
             apiKey = riotAPIKey,
-            start = 0,
-            count = 10,
+            start = start,
+            count = count,
             puuId = puuId!!
         )
     }
@@ -222,7 +218,135 @@ class RiotAPIService(
                     pentaKills = matchInformationData.info.participants[i].pentaKills
                 )
                 participantsRepository.save(participants)
+
+                logger.info("acesBefore15Minutes " + matchInformationData.info.participants[i].challenges.acesBefore15Minutes.toString())
+                val challenges = Challenges(
+                    idx = 0L,
+                    userName = matchInformationData.info.participants[i].summonerName,
+                    matchId = matchInformationData.metadata.matchId,
+                    abilityUses = matchInformationData.info.participants[i].challenges.abilityUses,
+                    acesBefore15Minutes = matchInformationData.info.participants[i].challenges.acesBefore15Minutes,
+                    alliedJungleMonsterKills = matchInformationData.info.participants[i].challenges.alliedJungleMonsterKills,
+                    assist12StreakCount = matchInformationData.info.participants[i].challenges.assist12StreakCount,
+                    baronTakedowns = matchInformationData.info.participants[i].challenges.baronTakedowns,
+                    bountyGold = matchInformationData.info.participants[i].challenges.bountyGold,
+                    buffsStolen = matchInformationData.info.participants[i].challenges.buffsStolen,
+                    blastConeOppositeOpponentCount = matchInformationData.info.participants[i].challenges.blastConeOppositeOpponentCount,
+                    completeSupportQuestInTime = matchInformationData.info.participants[i].challenges.completeSupportQuestInTime,
+                    controlWardsPlaced = matchInformationData.info.participants[i].challenges.controlWardsPlaced,
+                    controlWardTimeCoverageInRiverOrEnemyHalf = matchInformationData.info.participants[i].challenges.controlWardTimeCoverageInRiverOrEnemyHalf,
+                    damagePerMinute = matchInformationData.info.participants[i].challenges.damagePerMinute,
+                    damageTakenOnTeamPercentage = matchInformationData.info.participants[i].challenges.damageTakenOnTeamPercentage,
+                    dancedWithRiftHerald = matchInformationData.info.participants[i].challenges.dancedWithRiftHerald,
+                    deathsByEnemyChamps = matchInformationData.info.participants[i].challenges.deathsByEnemyChamps,
+                    doubleAces = matchInformationData.info.participants[i].challenges.doubleAces,
+                    dragonTakedowns = matchInformationData.info.participants[i].challenges.dragonTakedowns,
+                    dodgeSkillShotsSmallWindow = matchInformationData.info.participants[i].challenges.dodgeSkillShotsSmallWindow,
+                    earliestDragonTakedown = matchInformationData.info.participants[i].challenges.earliestDragonTakedown,
+                    earlyLaningPhaseGoldExpAdvantage = matchInformationData.info.participants[i].challenges.earlyLaningPhaseGoldExpAdvantage,
+                    effectiveHealAndShielding = matchInformationData.info.participants[i].challenges.effectiveHealAndShielding,
+                    elderDragonKillsWithOpposingSoul = matchInformationData.info.participants[i].challenges.elderDragonMultikills,
+                    elderDragonMultikills = matchInformationData.info.participants[i].challenges.elderDragonMultikills,
+                    enemyChampionImmobilizations = matchInformationData.info.participants[i].challenges.enemyChampionImmobilizations,
+                    enemyJungleMonsterKills = matchInformationData.info.participants[i].challenges.enemyJungleMonsterKills,
+                    epicMonsterKillsNearEnemyJungler = matchInformationData.info.participants[i].challenges.epicMonsterKillsNearEnemyJungler,
+                    epicMonsterSteals = matchInformationData.info.participants[i].challenges.epicMonsterSteals,
+                    epicMonsterKillsWithin30SecondsOfSpawn = matchInformationData.info.participants[i].challenges.epicMonsterKillsWithin30SecondsOfSpawn,
+                    epicMonsterStolenWithoutSmite = matchInformationData.info.participants[i].challenges.epicMonsterStolenWithoutSmite,
+                    firstTurretKilled = matchInformationData.info.participants[i].challenges.firstTurretKilled,
+                    flawlessAces = matchInformationData.info.participants[i].challenges.flawlessAces,
+                    firstTurretKilledTime = matchInformationData.info.participants[i].challenges.firstTurretKilledTime,
+                    fullTeamTakedown = matchInformationData.info.participants[i].challenges.fullTeamTakedown,
+                    gameLength = matchInformationData.info.participants[i].challenges.gameLength,
+                    goldPerMinute = matchInformationData.info.participants[i].challenges.goldPerMinute,
+                    getTakedownsInAllLanesEarlyJungleAsLaner = matchInformationData.info.participants[i].challenges.getTakedownsInAllLanesEarlyJungleAsLaner,
+                    hadOpenNexus = matchInformationData.info.participants[i].challenges.hadOpenNexus,
+                    highestChampionDamage = matchInformationData.info.participants[i].challenges.highestChampionDamage,
+                    highestCrowdControlScore = matchInformationData.info.participants[i].challenges.highestCrowdControlScore,
+                    highestWardKills = matchInformationData.info.participants[i].challenges.highestWardKills,
+                    immobilizeAndKillWithAlly = matchInformationData.info.participants[i].challenges.immobilizeAndKillWithAlly,
+                    initialBuffCount = matchInformationData.info.participants[i].challenges.initialBuffCount,
+                    initialCrabCount = matchInformationData.info.participants[i].challenges.initialCrabCount,
+                    junglerKillsEarlyJungle = matchInformationData.info.participants[i].challenges.junglerKillsEarlyJungle,
+                    jungleCsBefore10Minutes = matchInformationData.info.participants[i].challenges.jungleCsBefore10Minutes,
+                    junglerTakedownsNearDamagedEpicMonster = matchInformationData.info.participants[i].challenges.junglerTakedownsNearDamagedEpicMonster,
+                    killingSprees = matchInformationData.info.participants[i].challenges.killingSprees,
+                    kda = matchInformationData.info.participants[i].challenges.kda,
+                    killAfterHiddenWithAlly = matchInformationData.info.participants[i].challenges.killAfterHiddenWithAlly,
+                    killParticipation = matchInformationData.info.participants[i].challenges.killParticipation,
+                    killsNearEnemyTurret = matchInformationData.info.participants[i].challenges.killsNearEnemyTurret,
+                    killedChampTookFullTeamDamageSurvived = matchInformationData.info.participants[i].challenges.killedChampTookFullTeamDamageSurvived,
+                    killsOnLanersEarlyJungleAsJungler = matchInformationData.info.participants[i].challenges.killsOnLanersEarlyJungleAsJungler,
+                    killsOnOtherLanesEarlyJungleAsLaner = matchInformationData.info.participants[i].challenges.killsOnOtherLanesEarlyJungleAsLaner,
+                    killsOnRecentlyHealedByAramPack = matchInformationData.info.participants[i].challenges.killsOnRecentlyHealedByAramPack,
+                    killsUnderOwnTurret = matchInformationData.info.participants[i].challenges.killsUnderOwnTurret,
+                    killsWithHelpFromEpicMonster = matchInformationData.info.participants[i].challenges.killsWithHelpFromEpicMonster,
+                    knockEnemyIntoTeamAndKill = matchInformationData.info.participants[i].challenges.knockEnemyIntoTeamAndKill,
+                    kturretsDestroyedBeforePlatesFall = matchInformationData.info.participants[i].challenges.kTurretsDestroyedBeforePlatesFall,
+                    laneMinionsFirst10Minutes = matchInformationData.info.participants[i].challenges.laneMinionsFirst10Minutes,
+                    legendaryCount = matchInformationData.info.participants[i].challenges.legendaryCount,
+                    laningPhaseGoldExpAdvantage = matchInformationData.info.participants[i].challenges.laningPhaseGoldExpAdvantage,
+                    lostAnInhibitor = matchInformationData.info.participants[i].challenges.lostAnInhibitor,
+                    landSkillShotsEarlyGame = matchInformationData.info.participants[i].challenges.landSkillShotsEarlyGame,
+                    outnumberedKills = matchInformationData.info.participants[i].challenges.outnumberedKills,
+                    outnumberedNexusKill = matchInformationData.info.participants[i].challenges.outnumberedNexusKill,
+                    maxCsAdvantageOnLaneOpponent = matchInformationData.info.participants[i].challenges.maxCsAdvantageOnLaneOpponent,
+                    maxKillDeficit = matchInformationData.info.participants[i].challenges.maxKillDeficit,
+                    maxLevelLeadLaneOpponent = matchInformationData.info.participants[i].challenges.maxLevelLeadLaneOpponent,
+                    mejaisFullStackInTime = matchInformationData.info.participants[i].challenges.mejaisFullStackInTime,
+                    multikills = matchInformationData.info.participants[i].challenges.multikills,
+                    moreEnemyJungleThanOpponent = matchInformationData.info.participants[i].challenges.moreEnemyJungleThanOpponent,
+                    multiKillOneSpell = matchInformationData.info.participants[i].challenges.multiKillOneSpell,
+                    multikillsAfterAggressiveFlash = matchInformationData.info.participants[i].challenges.multikillsAfterAggressiveFlash,
+                    multiTurretRiftHeraldCount = matchInformationData.info.participants[i].challenges.multiTurretRiftHeraldCount,
+                    mythicItemUsed = matchInformationData.info.participants[i].challenges.mythicItemUsed,
+                    perfectGame = matchInformationData.info.participants[i].challenges.perfectGame,
+                    perfectDragonSoulsTaken = matchInformationData.info.participants[i].challenges.perfectDragonSoulsTaken,
+                    pickKillWithAlly = matchInformationData.info.participants[i].challenges.pickKillWithAlly,
+                    poroExplosions = matchInformationData.info.participants[i].challenges.poroExplosions,
+                    saveAllyFromDeath = matchInformationData.info.participants[i].challenges.saveAllyFromDeath,
+                    scuttleCrabKills = matchInformationData.info.participants[i].challenges.scuttleCrabKills,
+                    skillshotsDodged = matchInformationData.info.participants[i].challenges.skillshotsDodged,
+                    skillshotsHit = matchInformationData.info.participants[i].challenges.skillshotsHit,
+                    snowballsHit = matchInformationData.info.participants[i].challenges.snowballsHit,
+                    soloBaronKills = matchInformationData.info.participants[i].challenges.soloBaronKills,
+                    soloKills = matchInformationData.info.participants[i].challenges.soloKills,
+                    soloTurretsLategame = matchInformationData.info.participants[i].challenges.soloTurretsLategame,
+                    stealthWardsPlaced = matchInformationData.info.participants[i].challenges.stealthWardsPlaced,
+                    survivedSingleDigitHpCount = matchInformationData.info.participants[i].challenges.survivedSingleDigitHpCount,
+                    survivedThreeImmobilizesInFight = matchInformationData.info.participants[i].challenges.survivedThreeImmobilizesInFight,
+                    quickCleanse = matchInformationData.info.participants[i].challenges.quickCleanse,
+                    quickFirstTurret = matchInformationData.info.participants[i].challenges.quickFirstTurret,
+                    quickSoloKills = matchInformationData.info.participants[i].challenges.quickSoloKills,
+                    riftHeraldTakedowns = matchInformationData.info.participants[i].challenges.riftHeraldTakedowns,
+                    takedowns = matchInformationData.info.participants[i].challenges.takedowns,
+                    takedownOnFirstTurret = matchInformationData.info.participants[i].challenges.takedownOnFirstTurret,
+                    takedownsAfterGainingLevelAdvantage = matchInformationData.info.participants[i].challenges.takedownsAfterGainingLevelAdvantage,
+                    takedownsBeforeJungleMinionSpawn = matchInformationData.info.participants[i].challenges.takedownsBeforeJungleMinionSpawn,
+                    takedownsFirstXMinutes = matchInformationData.info.participants[i].challenges.takedownsFirstXMinutes,
+                    takedownsInAlcove = matchInformationData.info.participants[i].challenges.takedownsInAlcove,
+                    takedownsInEnemyFountain = matchInformationData.info.participants[i].challenges.takedownsInEnemyFountain,
+                    teamBaronKills = matchInformationData.info.participants[i].challenges.teamBaronKills,
+                    teamDamagePercentage = matchInformationData.info.participants[i].challenges.teamDamagePercentage,
+                    teamElderDragonKills = matchInformationData.info.participants[i].challenges.teamElderDragonKills,
+                    teamRiftHeraldKills = matchInformationData.info.participants[i].challenges.teamRiftHeraldKills,
+                    teleportTakedowns = matchInformationData.info.participants[i].challenges.teleportTakedowns,
+                    threeWardsOneSweeperCount = matchInformationData.info.participants[i].challenges.threeWardsOneSweeperCount,
+                    tookLargeDamageSurvived = matchInformationData.info.participants[i].challenges.tookLargeDamageSurvived,
+                    turretPlatesTaken = matchInformationData.info.participants[i].challenges.turretPlatesTaken,
+                    turretTakedowns = matchInformationData.info.participants[i].challenges.turretTakedowns,
+                    turretsTakenWithRiftHerald = matchInformationData.info.participants[i].challenges.turretsTakenWithRiftHerald,
+                    twentyMinionsIn3SecondsCount = matchInformationData.info.participants[i].challenges.twentyMinionsIn3SecondsCount,
+                    unseenRecalls = matchInformationData.info.participants[i].challenges.unseenRecalls,
+                    visionScoreAdvantageLaneOpponent = matchInformationData.info.participants[i].challenges.visionScoreAdvantageLaneOpponent,
+                    visionScorePerMinute = matchInformationData.info.participants[i].challenges.visionScorePerMinute,
+                    wardsGuarded = matchInformationData.info.participants[i].challenges.wardsGuarded,
+                    wardTakedowns = matchInformationData.info.participants[i].challenges.wardTakedowns,
+                    wardTakedownsBefore20M = matchInformationData.info.participants[i].challenges.wardTakedownsBefore20M
+                )
+                challengesRepository.save(challenges)
             }
+
             return matchInformation
         } else {
             return matchRepository.findById(matchId).get()

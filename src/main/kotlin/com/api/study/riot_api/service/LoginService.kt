@@ -36,7 +36,6 @@ class LoginService(
     private var lolUserData: LolUser? = null
     private var valUserData: ValUser? = null
     private var tokenUserData: Token? = null
-    private var UserData: User? = null
 
     fun execute(requestDTO: LoginRequestDto): UserInformationRequestDto {
         val user = accountRepository.findById(requestDTO.id)
