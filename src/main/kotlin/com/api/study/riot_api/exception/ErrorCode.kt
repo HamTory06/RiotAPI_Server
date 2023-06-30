@@ -10,7 +10,8 @@ enum class ErrorCode(private val status: Int, private val message: String) {
     TOKEN_NOT_FOUND_FORBIDDEN_ERROR(403, "토큰 만료"),
     NOT_FOUND_USER_IDX_BAD_REQUEST(400, "요청하신 idx로 유저 정보를 찾을수 없습니다"),
     NOT_FOUND_USER_ID_BAD_REQUEST(400, "요청하신 id가 존재 하지 않습니다"),
-    NOT_FOUND_USER_PASSWORD_BAD_REQUEST(400, "Password가 클렸습니다");
+    NOT_FOUND_USER_PASSWORD_BAD_REQUEST(400, "Password가 클렸습니다"),
+    SERVER_ERROR(500, "무언가가 잘못됬습니다.");
 
 
     fun getStatus(): Int {

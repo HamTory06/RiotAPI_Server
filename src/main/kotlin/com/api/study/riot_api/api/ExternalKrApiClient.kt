@@ -1,5 +1,6 @@
 package com.api.study.riot_api.api
 
+import com.api.study.riot_api.domain.dto.riotapi.kr.ChampionMasteryDtoArray
 import com.api.study.riot_api.domain.dto.riotapi.kr.LolUserInformationResponse
 import com.api.study.riot_api.exception.FeignCustomException
 import org.springframework.cloud.openfeign.FeignClient
@@ -27,5 +28,14 @@ interface ExternalKrApiClient {
         @RequestParam("api_key") apiKey: String,
         @PathVariable("PUUID") puuId: String,
     ): LolUserInformationResponse
+
+    @GetMapping("/lol/champion-mastery/v4/champion-masteries/by-summoner/{encryptedSummonerId}/top", consumes = ["application/json;charset=utf-8"])
+    fun getUserChampionMasteries(
+        @RequestParam("api_key") apiKey: String,
+        @PathVariable("encryptedSummonerId") lolUserId: String,
+        @RequestParam("count") count: Int
+    ): ChampionMasteryDtoArray
+
+
 
 }

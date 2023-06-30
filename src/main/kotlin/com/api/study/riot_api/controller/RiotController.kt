@@ -1,11 +1,12 @@
 package com.api.study.riot_api.controller
 
+import com.api.study.riot_api.domain.dto.riotapi.kr.ChampionMasteryDtoArray
 import com.api.study.riot_api.domain.entity.LolUser
 import com.api.study.riot_api.domain.entity.MatchInformation
 import com.api.study.riot_api.service.RiotAPIService
+import lombok.RequiredArgsConstructor
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -16,13 +17,13 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/riotAPI")
-class RiotController {
+class RiotController(
+    private var riotAPIService: RiotAPIService
+) {
     @Value("\${app.apiKey}")
     private val riotAPIKey: String = ""
-
-    @Autowired
-    private lateinit var riotAPIService: RiotAPIService
 
     private val logger: Logger = LoggerFactory.getLogger(RiotController::class.java)
 
@@ -67,6 +68,13 @@ class RiotController {
         @PathVariable("matchId") matchId: String
     ): MatchInformation {
         return riotAPIService.getMatchInformation(matchId)
+    }
+
+    @GetMapping("lol/champion/masteries/{lolUserName}")
+    fun getChampionMasteries(
+        @PathVariable("lolUserName") lolUserName: String,
+    ): ChampionMasteryDtoArray {
+        return riotAPIService.getUserChampionMasteries(lolUserName)
     }
 
 }

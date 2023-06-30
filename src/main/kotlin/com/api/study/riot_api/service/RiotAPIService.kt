@@ -2,7 +2,10 @@ package com.api.study.riot_api.service
 
 import com.api.study.riot_api.api.ExternalAsiaApiClient
 import com.api.study.riot_api.api.ExternalKrApiClient
+import com.api.study.riot_api.domain.dto.riotapi.kr.ChampionMasteryDtoArray
 import com.api.study.riot_api.domain.entity.*
+import com.api.study.riot_api.exception.CustomException
+import com.api.study.riot_api.exception.ErrorCode
 import com.api.study.riot_api.repository.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -17,7 +20,8 @@ class RiotAPIService(
     private val participantsUserPuuIdRepository: ParticipantsUserPuuidRepository,
     private val challengesRepository: ChallengesRepository,
     private var externalKrApiClient: ExternalKrApiClient,
-    private var externalAsiaApiClient: ExternalAsiaApiClient
+    private var externalAsiaApiClient: ExternalAsiaApiClient,
+    private var championMasteryRepository: ChampionMasteryRepository
 ) {
     private val logger: Logger = LoggerFactory.getLogger(RiotAPIService::class.java)
 
@@ -365,5 +369,34 @@ class RiotAPIService(
                 lolUserData
             )
         }
+    }
+
+    fun getUserChampionMasteries(lolName: String): ChampionMasteryDtoArray {
+        addLolUser(lolName)
+        val findLolUser = lolRepository.findByLolUserName(lolName)
+        if (findLolUser.isPresent) {
+            val lolUserId = findLolUser.get().lolUserId
+            val championMasteries =
+                externalKrApiClient.getUserChampionMasteries(lolUserId = lolUserId!!, apiKey = riotAPIKey, count = 10)
+            for (i in 0 until championMasteries.size) {
+                val championMastery = ChampionMastery(
+                    championId = championMasteries[i].championId,
+                    puuid = championMasteries[i].puuid,
+                    championLevel = championMasteries[i].championLevel,
+                    championPoints = championMasteries[i].championPoints,
+                    lastPlayTime = championMasteries[i].lastPlayTime,
+                    championPointsSinceLastLevel = championMasteries[i].championPointsSinceLastLevel,
+                    championPointsUntilNextLevel = championMasteries[i].championPointsUntilNextLevel,
+                    chestGranted = championMasteries[i].chestGranted,
+                    tokensEarned = championMasteries[i].tokensEarned,
+                    summonerId = championMasteries[i].summonerId
+                )
+                if (!championMasteryRepository.findByChampionId(championMastery.championId!!).isPresent)
+                    championMasteryRepository.save(championMastery)
+
+            }
+            return championMasteries
+        }
+        throw CustomException(ErrorCode.SERVER_ERROR)
     }
 }

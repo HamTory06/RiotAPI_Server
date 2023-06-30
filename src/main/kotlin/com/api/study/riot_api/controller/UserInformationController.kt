@@ -11,10 +11,9 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/update")
-class UserInformationController {
-    @Autowired
-    private lateinit var userInformationService: UserInformationService
-
+class UserInformationController(
+    private var userInformationService: UserInformationService
+) {
     private val logger: Logger = LoggerFactory.getLogger(UserInformationController::class.java)
 
     @PutMapping("/users/{id}")
