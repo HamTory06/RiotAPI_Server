@@ -1,5 +1,7 @@
 package com.api.study.riot_api.controller
 
+import com.api.study.riot_api.domain.dto.riotapi.LolVersion
+import com.api.study.riot_api.domain.dto.riotapi.kr.ChampionMasteryDto
 import com.api.study.riot_api.domain.dto.riotapi.kr.ChampionMasteryDtoArray
 import com.api.study.riot_api.domain.entity.LolUser
 import com.api.study.riot_api.domain.entity.MatchInformation
@@ -26,7 +28,6 @@ class RiotController(
     private val riotAPIKey: String = ""
 
     private val logger: Logger = LoggerFactory.getLogger(RiotController::class.java)
-
 
     @GetMapping("/riot.txt")
     fun download(): ResponseEntity<ByteArray> {
@@ -70,11 +71,25 @@ class RiotController(
         return riotAPIService.getMatchInformation(matchId)
     }
 
+    @GetMapping("/lol/champion/masteries/{champion}/{lolUserName}")
+    fun getChampionMasteries(
+        @PathVariable("lolUserName") lolUserName: String,
+        @PathVariable("champion") champion: String
+    ): ChampionMasteryDto {
+        return riotAPIService.getUserChampionMasteries(lolUserName, champion)
+    }
+
     @GetMapping("lol/champion/masteries/{lolUserName}")
     fun getChampionMasteries(
         @PathVariable("lolUserName") lolUserName: String,
     ): ChampionMasteryDtoArray {
         return riotAPIService.getUserChampionMasteries(lolUserName)
+    }
+
+
+    @GetMapping("/lol/status/versions")
+    fun getVersions(): LolVersion {
+        return LolVersion(riotAPIService.getVersions())
     }
 
 }

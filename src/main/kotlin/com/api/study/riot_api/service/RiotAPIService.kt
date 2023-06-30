@@ -1,12 +1,15 @@
 package com.api.study.riot_api.service
 
 import com.api.study.riot_api.api.ExternalAsiaApiClient
+import com.api.study.riot_api.api.ExternalDdragonApiClient
 import com.api.study.riot_api.api.ExternalKrApiClient
+import com.api.study.riot_api.api.ExternalKrDdragonLeagueoflegendsApiClient
+import com.api.study.riot_api.domain.dto.riotapi.ddragon.champion.Data
+import com.api.study.riot_api.domain.dto.riotapi.kr.ChampionMasteryDto
 import com.api.study.riot_api.domain.dto.riotapi.kr.ChampionMasteryDtoArray
 import com.api.study.riot_api.domain.entity.*
-import com.api.study.riot_api.exception.CustomException
-import com.api.study.riot_api.exception.ErrorCode
 import com.api.study.riot_api.repository.*
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -21,7 +24,9 @@ class RiotAPIService(
     private val challengesRepository: ChallengesRepository,
     private var externalKrApiClient: ExternalKrApiClient,
     private var externalAsiaApiClient: ExternalAsiaApiClient,
-    private var championMasteryRepository: ChampionMasteryRepository
+    private var externalDdragonApiClient: ExternalDdragonApiClient,
+    private var championMasteryRepository: ChampionMasteryRepository,
+    private var externalKrDdragonLeagueoflegendsApiClient: ExternalKrDdragonLeagueoflegendsApiClient
 ) {
     private val logger: Logger = LoggerFactory.getLogger(RiotAPIService::class.java)
 
@@ -350,7 +355,7 @@ class RiotAPIService(
         }
     }
 
-    private fun addLolUser(lolName: String) {
+    private fun addLolUser(lolName: String): LolUser {
         if (!lolRepository.findByLolUserName(lolName).isPresent) {
             val riotLolUserData = externalKrApiClient.getUserInformationName(
                 apiKey = riotAPIKey,
@@ -368,35 +373,48 @@ class RiotAPIService(
             lolRepository.save(
                 lolUserData
             )
+            return lolUserData
         }
+        return lolRepository.findByLolUserName(lolName).get()
     }
 
     fun getUserChampionMasteries(lolName: String): ChampionMasteryDtoArray {
-        addLolUser(lolName)
-        val findLolUser = lolRepository.findByLolUserName(lolName)
-        if (findLolUser.isPresent) {
-            val lolUserId = findLolUser.get().lolUserId
-            val championMasteries =
-                externalKrApiClient.getUserChampionMasteries(lolUserId = lolUserId!!, apiKey = riotAPIKey, count = 10)
-            for (i in 0 until championMasteries.size) {
-                val championMastery = ChampionMastery(
-                    championId = championMasteries[i].championId,
-                    puuid = championMasteries[i].puuid,
-                    championLevel = championMasteries[i].championLevel,
-                    championPoints = championMasteries[i].championPoints,
-                    lastPlayTime = championMasteries[i].lastPlayTime,
-                    championPointsSinceLastLevel = championMasteries[i].championPointsSinceLastLevel,
-                    championPointsUntilNextLevel = championMasteries[i].championPointsUntilNextLevel,
-                    chestGranted = championMasteries[i].chestGranted,
-                    tokensEarned = championMasteries[i].tokensEarned,
-                    summonerId = championMasteries[i].summonerId
-                )
-                if (!championMasteryRepository.findByChampionId(championMastery.championId!!).isPresent)
-                    championMasteryRepository.save(championMastery)
-
-            }
-            return championMasteries
+        val lolUserData = addLolUser(lolName)
+        val championMasteries =
+            externalKrApiClient.getUserChampionMasteries(
+                lolUserId = lolUserData.lolUserId,
+                apiKey = riotAPIKey,
+                count = 10
+            )
+        for (i in 0 until championMasteries.size) {
+            val championMastery = ChampionMastery(
+                championId = championMasteries[i].championId,
+                puuid = championMasteries[i].puuid,
+                championLevel = championMasteries[i].championLevel,
+                championPoints = championMasteries[i].championPoints,
+                lastPlayTime = championMasteries[i].lastPlayTime,
+                championPointsSinceLastLevel = championMasteries[i].championPointsSinceLastLevel,
+                championPointsUntilNextLevel = championMasteries[i].championPointsUntilNextLevel,
+                chestGranted = championMasteries[i].chestGranted,
+                tokensEarned = championMasteries[i].tokensEarned,
+                summonerId = championMasteries[i].summonerId
+            )
+            if (!championMasteryRepository.findByChampionId(championMastery.championId!!).isPresent)
+                championMasteryRepository.save(championMastery)
         }
-        throw CustomException(ErrorCode.SERVER_ERROR)
+        return championMasteries
+    }
+
+    fun getUserChampionMasteries(lolName: String, champion: String): ChampionMasteryDto {
+        val lolUserData = addLolUser(lolName)
+        val championDataMap = externalKrDdragonLeagueoflegendsApiClient.getChampionInformation("$champion.json").data.values
+        val champion = championDataMap.map { it }
+        val championKey = champion[0].key
+        logger.info(championKey)
+        return externalKrApiClient.getUserChampionMasteries(apiKey = riotAPIKey, lolUserId = lolUserData.lolUserId, championId = championKey)
+    }
+
+    fun getVersions(): String {
+        return externalKrDdragonLeagueoflegendsApiClient.getVersions()[0]
     }
 }

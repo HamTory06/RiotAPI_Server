@@ -11,6 +11,6 @@ class LolUser (
     var lolUserLevel: Int? = null,
     var lolUserName: String? = null,
     var lolUserPuuId: String? = null,
-    var lolUserId: String? = null,
+    var lolUserId: String = "",
     var lolUserAccountId: String? = null,
 )

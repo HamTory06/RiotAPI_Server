@@ -24,7 +24,6 @@ class AccountController(
     private var userInformationService: UserInformationService
 ) {
 
-
     @PostMapping("/login")
     fun login(
         @RequestBody @Valid loginRequestDTO: LoginRequestDto,
@@ -52,14 +51,14 @@ class AccountController(
     fun deleteUser(
         @RequestHeader("Authorization") accessToken: String,
         @PathVariable("id") id: String
-    ){
+    ) {
         userInformationService.deleteUser(id, accessToken)
     }
 
     @PostMapping("/refresh")
     fun refresh(
         @RequestHeader("Authorization") refreshToken: String
-    ){
+    ) {
         jwtService.refresh(refreshToken)
     }
 }

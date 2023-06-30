@@ -18,8 +18,8 @@ class JwtService(
 
     @Value("\${app.secretKey}")
     private val secret: String = ""
-    fun refresh(refreshToken: String): String{
-        if(jwtToken.validateToken(refreshToken)){
+    fun refresh(refreshToken: String): String {
+        if (jwtToken.validateToken(refreshToken)) {
             throw CustomException(ErrorCode.TOKEN_NOT_FOUND_FORBIDDEN_ERROR)
         }
         return jwtToken.makeJwtRefreshToken()
