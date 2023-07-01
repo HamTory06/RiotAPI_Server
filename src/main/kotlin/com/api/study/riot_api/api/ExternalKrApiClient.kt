@@ -19,10 +19,10 @@ interface ExternalKrApiClient {
         @PathVariable("username") username: String
     ): LolUserInformationResponse
 
-    @GetMapping("lol/summoner/v4/summoners/by-account/{accountid}", consumes = ["application/json;charset=utf-8"])
+    @GetMapping("lol/summoner/v4/summoners/by-account/{accountId}", consumes = ["application/json;charset=utf-8"])
     fun getUserInformationAccountId(
         @RequestParam("api_key") apiKey: String,
-        @PathVariable("accountid") accountId: String
+        @PathVariable("accountId") accountId: String
     ): LolUserInformationResponse
 
     @GetMapping("lol/summoner/v4/summoners/by-puuid/{PUUID}", consumes = ["application/json;charset=utf-8"])

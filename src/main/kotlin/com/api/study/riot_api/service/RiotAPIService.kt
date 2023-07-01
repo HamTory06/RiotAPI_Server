@@ -36,7 +36,7 @@ class RiotAPIService(
         val lolUser = lolRepository.findByLolUserName(userName)
 
         if (!lolUser.isPresent) {
-            addLolUser(userName)
+            return addLolUser(userName)
         }
 
         return lolUser.get()
