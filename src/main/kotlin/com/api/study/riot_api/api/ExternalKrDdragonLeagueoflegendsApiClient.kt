@@ -12,8 +12,9 @@ interface ExternalKrDdragonLeagueoflegendsApiClient {
     @GetMapping("api/versions.json")
     fun getVersions(): LolVersionsResponse
 
-    @GetMapping("/cdn/13.13.1/data/ko_KR/champion/{champion}")
+    @GetMapping("/cdn/{version}/data/ko_KR/champion/{champion}")
     fun getChampionInformation(
-        @PathVariable("champion") champion: String
+        @PathVariable("champion") champion: String,
+        @PathVariable("version") version: String
     ): ChampionInformationDto
 }

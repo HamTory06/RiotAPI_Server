@@ -407,7 +407,9 @@ class RiotAPIService(
 
     fun getUserChampionMasteries(lolName: String, champion: String): ChampionMasteryDto {
         val lolUserData = addLolUser(lolName)
-        val championDataMap = externalKrDdragonLeagueoflegendsApiClient.getChampionInformation("$champion.json").data.values
+        val version = externalKrDdragonLeagueoflegendsApiClient.getVersions()[0]
+        logger.info(version)
+        val championDataMap = externalKrDdragonLeagueoflegendsApiClient.getChampionInformation(version,"$champion.json").data.values
         val champion = championDataMap.map { it }
         val championKey = champion[0].key
         logger.info(championKey)
