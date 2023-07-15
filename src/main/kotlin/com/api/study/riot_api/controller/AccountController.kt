@@ -43,7 +43,7 @@ class AccountController(
     fun checkSameId(
         @RequestParam("id") id: String
     ): SameIdDto {
-        return SameIdDto(accountRepository.findById(id).isPresent)
+        return signupService.same(id)
     }
 
 

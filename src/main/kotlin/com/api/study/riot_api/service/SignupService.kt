@@ -1,5 +1,6 @@
 package com.api.study.riot_api.service
 
+import com.api.study.riot_api.domain.dto.SameIdDto
 import com.api.study.riot_api.domain.dto.SignupRequestDto
 import com.api.study.riot_api.domain.entity.User
 import com.api.study.riot_api.exception.CustomException
@@ -30,7 +31,7 @@ class SignupService(
     }
 
     fun save(signupRequestDTO: SignupRequestDto) {
-        if (isContainsHangul(signupRequestDTO.name) || isContainsHangul(signupRequestDTO.id)) {
+        if (isContainsHangul(signupRequestDTO.id)) {
             throw CustomException(ErrorCode.NOT_HANGEUL_INTERNAL_SERVER_ERROR)
         }
         signupService(signupRequestDTO)
@@ -39,5 +40,14 @@ class SignupService(
     private fun isContainsHangul(value: String): Boolean {
         val regex = Regex("[a-zA-Z0-9]+")
         return !regex.containsMatchIn(value)
+    }
+
+    fun same(id: String): SameIdDto {
+        if(id.isEmpty()){
+            throw CustomException(ErrorCode.EMPTY_TEXT_BAD_REQUEST)
+        } else {
+            return SameIdDto(accountRepository.findById(id).isPresent)
+        }
+
     }
 }
