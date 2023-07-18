@@ -10,6 +10,7 @@ import com.api.study.riot_api.service.LoginService
 import com.api.study.riot_api.service.SignupService
 import com.api.study.riot_api.service.UserInformationService
 import lombok.RequiredArgsConstructor
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
 
@@ -32,11 +33,11 @@ class AccountController(
     }
 
     @PostMapping("/signup")
+    @ResponseStatus(HttpStatus.CREATED)
     fun signup(
         @RequestBody @Valid signupRequestDTO: SignupRequestDto
-    ): SignupRequestDto {
+    ){
         signupService.save(signupRequestDTO)
-        return signupRequestDTO
     }
 
     @GetMapping("/check/sameId")
