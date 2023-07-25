@@ -26,7 +26,6 @@ class RiotController(
 ) {
     @Value("\${app.apiKey}")
     private val riotAPIKey: String = ""
-
     private val logger: Logger = LoggerFactory.getLogger(RiotController::class.java)
 
     @GetMapping("/riot.txt")
@@ -85,7 +84,6 @@ class RiotController(
     ): ChampionMasteryDtoArray {
         return riotAPIService.getUserChampionMasteries(lolUserName)
     }
-
 
     @GetMapping("/lol/status/versions")
     fun getVersions(): LolVersion {

@@ -8,6 +8,8 @@ import com.api.study.riot_api.domain.dto.riotapi.ddragon.champion.Data
 import com.api.study.riot_api.domain.dto.riotapi.kr.ChampionMasteryDto
 import com.api.study.riot_api.domain.dto.riotapi.kr.ChampionMasteryDtoArray
 import com.api.study.riot_api.domain.entity.*
+import com.api.study.riot_api.exception.CustomException
+import com.api.study.riot_api.exception.ErrorCode
 import com.api.study.riot_api.repository.*
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.Logger
@@ -33,13 +35,15 @@ class RiotAPIService(
     @Value("\${app.apiKey}")
     private val riotAPIKey = ""
     fun getLolUserInformation(userName: String): LolUser {
+
         val lolUser = lolRepository.findByLolUserName(userName)
 
-        if (!lolUser.isPresent) {
+        if (lolUser.isEmpty) {
             return addLolUser(userName)
+        } else {
+            return lolUserUpdate(userName)
         }
 
-        return lolUser.get()
     }
 
     fun getMatchId(start: Int, count: Int, userName: String): List<String> {
@@ -356,26 +360,39 @@ class RiotAPIService(
     }
 
     private fun addLolUser(lolName: String): LolUser {
-        if (!lolRepository.findByLolUserName(lolName).isPresent) {
-            val riotLolUserData = externalKrApiClient.getUserInformationName(
-                apiKey = riotAPIKey,
-                username = lolName
-            )
+        val riotLolUserData = externalKrApiClient.getUserInformationName(
+            apiKey = riotAPIKey,
+            username = lolName
+        )
+        val lolUserData = LolUser(
+            lolUserName = riotLolUserData.name,
+            lolUserLevel = riotLolUserData.summonerLevel,
+            lolUserPuuId = riotLolUserData.puuid,
+            lolUserAccountId = riotLolUserData.accountId,
+            lolUserId = riotLolUserData.id
+        )
 
-            val lolUserData = LolUser(
-                lolUserName = riotLolUserData.name,
-                lolUserLevel = riotLolUserData.summonerLevel,
-                lolUserPuuId = riotLolUserData.puuid,
-                lolUserAccountId = riotLolUserData.accountId,
-                lolUserId = riotLolUserData.id
-            )
-
-            lolRepository.save(
-                lolUserData
-            )
-            return lolUserData
-        }
+        lolRepository.save(
+            lolUserData
+        )
         return lolRepository.findByLolUserName(lolName).get()
+    }
+
+    private fun lolUserUpdate(lolUserName: String): LolUser {
+        val lolUserData = lolRepository.findByLolUserName(lolUserName).get()
+
+        val riotLolUserData = externalKrApiClient.getUserUpdateInformationName(
+            apiKey = riotAPIKey,
+            username = lolUserName
+        )
+        val lolUserUpdateData = LolUser(
+            lolUserName = riotLolUserData.name,
+            lolUserLevel = riotLolUserData.summonerLevel,
+            lolUserPuuId = lolUserData.lolUserPuuId,
+            lolUserAccountId = lolUserData.lolUserAccountId,
+            lolUserId = lolUserData.lolUserId
+        )
+        return lolRepository.save(lolUserUpdateData)
     }
 
     fun getUserChampionMasteries(lolName: String): ChampionMasteryDtoArray {
@@ -409,11 +426,16 @@ class RiotAPIService(
         val lolUserData = addLolUser(lolName)
         val version = externalKrDdragonLeagueoflegendsApiClient.getVersions()[0]
         logger.info(version)
-        val championDataMap = externalKrDdragonLeagueoflegendsApiClient.getChampionInformation(version,"$champion.json").data.values
+        val championDataMap =
+            externalKrDdragonLeagueoflegendsApiClient.getChampionInformation(version, "$champion.json").data.values
         val champion = championDataMap.map { it }
         val championKey = champion[0].key
         logger.info(championKey)
-        return externalKrApiClient.getUserChampionMasteries(apiKey = riotAPIKey, lolUserId = lolUserData.lolUserId, championId = championKey)
+        return externalKrApiClient.getUserChampionMasteries(
+            apiKey = riotAPIKey,
+            lolUserId = lolUserData.lolUserId,
+            championId = championKey
+        )
     }
 
     fun getVersions(): String {
