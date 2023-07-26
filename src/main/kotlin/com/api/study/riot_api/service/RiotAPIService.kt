@@ -16,6 +16,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 
 @Service
 class RiotAPIService(
@@ -35,14 +36,7 @@ class RiotAPIService(
     @Value("\${app.apiKey}")
     private val riotAPIKey = ""
     fun getLolUserInformation(userName: String): LolUser {
-
-        val lolUser = lolRepository.findByLolUserName(userName)
-
-        if (lolUser.isEmpty) {
-            return addLolUser(userName)
-        } else {
-            return lolUserUpdate(userName)
-        }
+        return addLolUser(userName)
 
     }
 
@@ -360,39 +354,45 @@ class RiotAPIService(
     }
 
     private fun addLolUser(lolName: String): LolUser {
-        val riotLolUserData = externalKrApiClient.getUserInformationName(
-            apiKey = riotAPIKey,
-            username = lolName
-        )
-        val lolUserData = LolUser(
-            lolUserName = riotLolUserData.name,
-            lolUserLevel = riotLolUserData.summonerLevel,
-            lolUserPuuId = riotLolUserData.puuid,
-            lolUserAccountId = riotLolUserData.accountId,
-            lolUserId = riotLolUserData.id
-        )
+        if (lolRepository.findByLolUserName(lolName).isEmpty) {
+            val riotLolUserData = externalKrApiClient.getUserInformationName(
+                apiKey = riotAPIKey,
+                username = lolName
+            )
+            val lolUserData = LolUser(
+                lolUserName = riotLolUserData.name,
+                lolUserLevel = riotLolUserData.summonerLevel,
+                lolUserPuuId = riotLolUserData.puuid,
+                lolUserAccountId = riotLolUserData.accountId,
+                lolUserId = riotLolUserData.id,
+                lolUserUpdateTime = LocalDateTime.now()
+            )
 
-        lolRepository.save(
-            lolUserData
-        )
+            lolRepository.save(
+                lolUserData
+            )
+        } else {
+            val lolUserData = lolRepository.findByLolUserName(lolName).get()
+            if (lolUserData.lolUserUpdateTime.plusMinutes(5) > LocalDateTime.now())
+                return lolUserData
+
+
+            val riotLolUserData = externalKrApiClient.getUserUpdateInformationName(
+                apiKey = riotAPIKey,
+                username = lolName
+            )
+            val lolUserUpdateData = LolUser(
+                lolUserName = riotLolUserData.name,
+                lolUserLevel = riotLolUserData.summonerLevel,
+                lolUserPuuId = lolUserData.lolUserPuuId,
+                lolUserAccountId = lolUserData.lolUserAccountId,
+                lolUserId = lolUserData.lolUserId,
+                lolUserUpdateTime = LocalDateTime.now()
+            )
+            return lolRepository.save(lolUserUpdateData)
+        }
+
         return lolRepository.findByLolUserName(lolName).get()
-    }
-
-    private fun lolUserUpdate(lolUserName: String): LolUser {
-        val lolUserData = lolRepository.findByLolUserName(lolUserName).get()
-
-        val riotLolUserData = externalKrApiClient.getUserUpdateInformationName(
-            apiKey = riotAPIKey,
-            username = lolUserName
-        )
-        val lolUserUpdateData = LolUser(
-            lolUserName = riotLolUserData.name,
-            lolUserLevel = riotLolUserData.summonerLevel,
-            lolUserPuuId = lolUserData.lolUserPuuId,
-            lolUserAccountId = lolUserData.lolUserAccountId,
-            lolUserId = lolUserData.lolUserId
-        )
-        return lolRepository.save(lolUserUpdateData)
     }
 
     fun getUserChampionMasteries(lolName: String): ChampionMasteryDtoArray {

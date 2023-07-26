@@ -1,5 +1,6 @@
 package com.api.study.riot_api.domain.entity
 
+import java.time.LocalDateTime
 import javax.persistence.*
 
 @Entity
@@ -13,4 +14,5 @@ class LolUser (
     var lolUserPuuId: String? = null,
     var lolUserId: String = "",
     var lolUserAccountId: String? = null,
+    var lolUserUpdateTime: LocalDateTime
 )

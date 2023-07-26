@@ -97,28 +97,6 @@ class UserInformationService(
             valUser = valRepository.findByValUserName(valName).get()
     }
 
-    fun addLolUser(lolName: String) {
-        val riotLolUserData = externalKrApiClient.getUserInformationName(
-            apiKey = riotAPIKey,
-            username = lolName
-        )
-
-        val lolUserData = LolUser(
-            lolUserName = riotLolUserData.name,
-            lolUserLevel = riotLolUserData.summonerLevel,
-            lolUserPuuId = riotLolUserData.puuid,
-            lolUserAccountId = riotLolUserData.accountId,
-            lolUserId = riotLolUserData.id
-        )
-
-        lolRepository.save(
-            lolUserData
-        )
-
-        if (lolRepository.findByLolUserName(lolName).isPresent)
-            lolUser = lolRepository.findByLolUserName(lolName).get()
-    }
-
     fun deleteUser(id: String, accessToken: String) {
         if (jwtToken.validateToken(accessToken)) {
             throw CustomException(ErrorCode.TOKEN_NOT_FOUND_FORBIDDEN_ERROR)
