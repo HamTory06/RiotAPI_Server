@@ -382,6 +382,7 @@ class RiotAPIService(
                 username = lolName
             )
             val lolUserUpdateData = LolUser(
+                idx = lolUserData.idx,
                 lolUserName = riotLolUserData.name,
                 lolUserLevel = riotLolUserData.summonerLevel,
                 lolUserPuuId = lolUserData.lolUserPuuId,
