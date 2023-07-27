@@ -51,16 +51,16 @@ class RiotController(
     fun getUserPuuIdName(
         @PathVariable("username") username: String
     ): LolUser {
-        return riotAPIService.getLolUserInformation(username)
+        return riotAPIService.addLolUser(username)
     }
 
-    @GetMapping("/lol/match/getMatchId")
+    @GetMapping("/lol/match/getMatchId/{puuid}")
     fun getMatchId(
-        @RequestParam("username") username: String,
+        @PathVariable("puuid") puuid: String,
         @RequestParam("start") start: Int,
         @RequestParam("count") count: Int
     ): List<String>{
-        return riotAPIService.getMatchId(start, count, username)
+        return riotAPIService.getMatchId(start, count, puuid)
     }
 
     @GetMapping("/lol/match/getMatchInformation/{matchId}")

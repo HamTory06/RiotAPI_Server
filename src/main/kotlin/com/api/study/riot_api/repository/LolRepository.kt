@@ -9,4 +9,5 @@ import java.util.*
 @Repository
 interface LolRepository: JpaRepository<LolUser, Long> {
     fun findByLolUserName(lolUserName: String): Optional<LolUser>
+
 }

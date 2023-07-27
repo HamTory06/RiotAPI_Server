@@ -4,14 +4,10 @@ import com.api.study.riot_api.api.ExternalAsiaApiClient
 import com.api.study.riot_api.api.ExternalDdragonApiClient
 import com.api.study.riot_api.api.ExternalKrApiClient
 import com.api.study.riot_api.api.ExternalKrDdragonLeagueoflegendsApiClient
-import com.api.study.riot_api.domain.dto.riotapi.ddragon.champion.Data
 import com.api.study.riot_api.domain.dto.riotapi.kr.ChampionMasteryDto
 import com.api.study.riot_api.domain.dto.riotapi.kr.ChampionMasteryDtoArray
 import com.api.study.riot_api.domain.entity.*
-import com.api.study.riot_api.exception.CustomException
-import com.api.study.riot_api.exception.ErrorCode
 import com.api.study.riot_api.repository.*
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -24,6 +20,7 @@ class RiotAPIService(
     private val matchRepository: MatchRepository,
     private val participantsRepository: ParticipantsRepository,
     private val participantsUserPuuIdRepository: ParticipantsUserPuuidRepository,
+    private val participantsUserArenaPuuIdRepository: ParticipantsArenaUserPuuidRepository,
     private val challengesRepository: ChallengesRepository,
     private var externalKrApiClient: ExternalKrApiClient,
     private var externalAsiaApiClient: ExternalAsiaApiClient,
@@ -35,27 +32,14 @@ class RiotAPIService(
 
     @Value("\${app.apiKey}")
     private val riotAPIKey = ""
-    fun getLolUserInformation(userName: String): LolUser {
-        return addLolUser(userName)
 
-    }
-
-    fun getMatchId(start: Int, count: Int, userName: String): List<String> {
-        val puuId: String? = if (lolRepository.findByLolUserName(userName).isPresent) {
-            val lolUserData = lolRepository.findByLolUserName(userName).get()
-            lolUserData.lolUserPuuId
-        } else {
-            val riotLolUserData = getLolUserInformation(
-                userName = userName
-            )
-            riotLolUserData.lolUserPuuId
-        }
-
+    fun getMatchId(start: Int, count: Int, puuid: String): List<String> {
+        logger.info("puuid:$puuid, start: $start, count: $count")
         return externalAsiaApiClient.getMatchId(
             apiKey = riotAPIKey,
+            puuid = puuid,
             start = start,
-            count = count,
-            puuId = puuId!!
+            count = count
         )
     }
 
@@ -77,24 +61,42 @@ class RiotAPIService(
                 gameVersion = info.gameVersion,
                 mapId = info.mapId
             )
-            val participantsUserPuuId = ParticipantsUserPuuid(
-                matchId = metadata.matchId,
-                puuid_0 = metadata.participants[0],
-                puuid_1 = metadata.participants[1],
-                puuid_2 = metadata.participants[2],
-                puuid_3 = metadata.participants[3],
-                puuid_4 = metadata.participants[4],
-                puuid_5 = metadata.participants[5],
-                puuid_6 = metadata.participants[6],
-                puuid_7 = metadata.participants[7],
-                puuid_8 = metadata.participants[8],
-                puuid_9 = metadata.participants[9]
-            )
             matchRepository.save(matchInformation)
-            participantsUserPuuIdRepository.save(participantsUserPuuId)
-            for (i in 0..9) {
+            if (info.gameMode == "CLASSIC") {
+                val participantsUserPuuId = ParticipantsUserPuuid(
+                    matchId = metadata.matchId,
+                    puuid_0 = metadata.participants[0],
+                    puuid_1 = metadata.participants[1],
+                    puuid_2 = metadata.participants[2],
+                    puuid_3 = metadata.participants[3],
+                    puuid_4 = metadata.participants[4],
+                    puuid_5 = metadata.participants[5],
+                    puuid_6 = metadata.participants[6],
+                    puuid_7 = metadata.participants[7],
+                    puuid_8 = metadata.participants[8],
+                    puuid_9 = metadata.participants[9]
+                )
+                participantsUserPuuIdRepository.save(participantsUserPuuId)
+            } else if (info.gameMode == "CHERRY") {
+                val participantsUserArenaPuuid = ParticipantsArenaUserPuuid(
+                    matchId = metadata.matchId,
+                    puuid_0 = metadata.participants[0],
+                    puuid_1 = metadata.participants[1],
+                    puuid_2 = metadata.participants[2],
+                    puuid_3 = metadata.participants[3],
+                    puuid_4 = metadata.participants[4],
+                    puuid_5 = metadata.participants[5],
+                    puuid_6 = metadata.participants[6],
+                    puuid_7 = metadata.participants[7]
+                )
+                participantsUserArenaPuuIdRepository.save(participantsUserArenaPuuid)
+            }
+
+
+            for (i in 0 until metadata.participants.size) {
                 val participants = matchInformationData.info.participants[i]
                 val challenges = participants.challenges
+                logger.info("lolUserName: ${participants.summonerName}")
                 addLolUser(participants.summonerName)
                 val participantsData = Participants(
                     idx = 0L,
@@ -220,132 +222,133 @@ class RiotAPIService(
                     participantId = participants.participantId,
                     pentaKills = participants.pentaKills
                 )
+                participantsRepository.save(participantsData)
                 val challengesData = Challenges(
                     idx = 0L,
                     userName = participants.summonerName,
                     matchId = matchInformationData.metadata.matchId,
-                    abilityUses = challenges.abilityUses,
-                    acesBefore15Minutes = challenges.acesBefore15Minutes,
-                    alliedJungleMonsterKills = challenges.alliedJungleMonsterKills,
-                    assist12StreakCount = challenges.assist12StreakCount,
-                    baronTakedowns = challenges.baronTakedowns,
-                    bountyGold = challenges.bountyGold,
-                    buffsStolen = challenges.buffsStolen,
-                    blastConeOppositeOpponentCount = challenges.blastConeOppositeOpponentCount,
-                    completeSupportQuestInTime = challenges.completeSupportQuestInTime,
-                    controlWardsPlaced = challenges.controlWardsPlaced,
-                    controlWardTimeCoverageInRiverOrEnemyHalf = challenges.controlWardTimeCoverageInRiverOrEnemyHalf,
-                    damagePerMinute = challenges.damagePerMinute,
-                    damageTakenOnTeamPercentage = challenges.damageTakenOnTeamPercentage,
-                    dancedWithRiftHerald = challenges.dancedWithRiftHerald,
-                    deathsByEnemyChamps = challenges.deathsByEnemyChamps,
-                    doubleAces = challenges.doubleAces,
-                    dragonTakedowns = challenges.dragonTakedowns,
-                    dodgeSkillShotsSmallWindow = challenges.dodgeSkillShotsSmallWindow,
-                    earliestDragonTakedown = challenges.earliestDragonTakedown,
-                    earlyLaningPhaseGoldExpAdvantage = challenges.earlyLaningPhaseGoldExpAdvantage,
-                    effectiveHealAndShielding = challenges.effectiveHealAndShielding,
-                    elderDragonKillsWithOpposingSoul = challenges.elderDragonMultikills,
-                    elderDragonMultikills = challenges.elderDragonMultikills,
-                    enemyChampionImmobilizations = challenges.enemyChampionImmobilizations,
-                    enemyJungleMonsterKills = challenges.enemyJungleMonsterKills,
-                    epicMonsterKillsNearEnemyJungler = challenges.epicMonsterKillsNearEnemyJungler,
-                    epicMonsterSteals = challenges.epicMonsterSteals,
-                    epicMonsterKillsWithin30SecondsOfSpawn = challenges.epicMonsterKillsWithin30SecondsOfSpawn,
-                    epicMonsterStolenWithoutSmite = challenges.epicMonsterStolenWithoutSmite,
-                    firstTurretKilled = challenges.firstTurretKilled,
-                    flawlessAces = challenges.flawlessAces,
-                    firstTurretKilledTime = challenges.firstTurretKilledTime,
-                    fullTeamTakedown = challenges.fullTeamTakedown,
-                    gameLength = challenges.gameLength,
-                    goldPerMinute = challenges.goldPerMinute,
-                    getTakedownsInAllLanesEarlyJungleAsLaner = challenges.getTakedownsInAllLanesEarlyJungleAsLaner,
-                    hadOpenNexus = challenges.hadOpenNexus,
-                    highestChampionDamage = challenges.highestChampionDamage,
-                    highestCrowdControlScore = challenges.highestCrowdControlScore,
-                    highestWardKills = challenges.highestWardKills,
-                    immobilizeAndKillWithAlly = challenges.immobilizeAndKillWithAlly,
-                    initialBuffCount = challenges.initialBuffCount,
-                    initialCrabCount = challenges.initialCrabCount,
-                    junglerKillsEarlyJungle = challenges.junglerKillsEarlyJungle,
-                    jungleCsBefore10Minutes = challenges.jungleCsBefore10Minutes,
-                    junglerTakedownsNearDamagedEpicMonster = challenges.junglerTakedownsNearDamagedEpicMonster,
-                    killingSprees = challenges.killingSprees,
-                    kda = challenges.kda,
-                    killAfterHiddenWithAlly = challenges.killAfterHiddenWithAlly,
-                    killParticipation = challenges.killParticipation,
-                    killsNearEnemyTurret = challenges.killsNearEnemyTurret,
-                    killedChampTookFullTeamDamageSurvived = challenges.killedChampTookFullTeamDamageSurvived,
-                    killsOnLanersEarlyJungleAsJungler = challenges.killsOnLanersEarlyJungleAsJungler,
-                    killsOnOtherLanesEarlyJungleAsLaner = challenges.killsOnOtherLanesEarlyJungleAsLaner,
-                    killsOnRecentlyHealedByAramPack = challenges.killsOnRecentlyHealedByAramPack,
-                    killsUnderOwnTurret = challenges.killsUnderOwnTurret,
-                    killsWithHelpFromEpicMonster = challenges.killsWithHelpFromEpicMonster,
-                    knockEnemyIntoTeamAndKill = challenges.knockEnemyIntoTeamAndKill,
-                    kturretsDestroyedBeforePlatesFall = challenges.kTurretsDestroyedBeforePlatesFall,
-                    laneMinionsFirst10Minutes = challenges.laneMinionsFirst10Minutes,
-                    legendaryCount = challenges.legendaryCount,
-                    laningPhaseGoldExpAdvantage = challenges.laningPhaseGoldExpAdvantage,
-                    lostAnInhibitor = challenges.lostAnInhibitor,
-                    landSkillShotsEarlyGame = challenges.landSkillShotsEarlyGame,
-                    outnumberedKills = challenges.outnumberedKills,
-                    outnumberedNexusKill = challenges.outnumberedNexusKill,
-                    maxCsAdvantageOnLaneOpponent = challenges.maxCsAdvantageOnLaneOpponent,
-                    maxKillDeficit = challenges.maxKillDeficit,
-                    maxLevelLeadLaneOpponent = challenges.maxLevelLeadLaneOpponent,
-                    mejaisFullStackInTime = challenges.mejaisFullStackInTime,
-                    multikills = challenges.multikills,
-                    moreEnemyJungleThanOpponent = challenges.moreEnemyJungleThanOpponent,
-                    multiKillOneSpell = challenges.multiKillOneSpell,
-                    multikillsAfterAggressiveFlash = challenges.multikillsAfterAggressiveFlash,
-                    multiTurretRiftHeraldCount = challenges.multiTurretRiftHeraldCount,
-                    mythicItemUsed = challenges.mythicItemUsed,
-                    perfectGame = challenges.perfectGame,
-                    perfectDragonSoulsTaken = challenges.perfectDragonSoulsTaken,
-                    pickKillWithAlly = challenges.pickKillWithAlly,
-                    poroExplosions = challenges.poroExplosions,
-                    saveAllyFromDeath = challenges.saveAllyFromDeath,
-                    scuttleCrabKills = challenges.scuttleCrabKills,
-                    skillshotsDodged = challenges.skillshotsDodged,
-                    skillshotsHit = challenges.skillshotsHit,
-                    snowballsHit = challenges.snowballsHit,
-                    soloBaronKills = challenges.soloBaronKills,
-                    soloKills = challenges.soloKills,
-                    soloTurretsLategame = challenges.soloTurretsLategame,
-                    stealthWardsPlaced = challenges.stealthWardsPlaced,
-                    survivedSingleDigitHpCount = challenges.survivedSingleDigitHpCount,
-                    survivedThreeImmobilizesInFight = challenges.survivedThreeImmobilizesInFight,
-                    quickCleanse = challenges.quickCleanse,
-                    quickFirstTurret = challenges.quickFirstTurret,
-                    quickSoloKills = challenges.quickSoloKills,
-                    riftHeraldTakedowns = challenges.riftHeraldTakedowns,
-                    takedowns = challenges.takedowns,
-                    takedownOnFirstTurret = challenges.takedownOnFirstTurret,
-                    takedownsAfterGainingLevelAdvantage = challenges.takedownsAfterGainingLevelAdvantage,
-                    takedownsBeforeJungleMinionSpawn = challenges.takedownsBeforeJungleMinionSpawn,
-                    takedownsFirstXMinutes = challenges.takedownsFirstXMinutes,
-                    takedownsInAlcove = challenges.takedownsInAlcove,
-                    takedownsInEnemyFountain = challenges.takedownsInEnemyFountain,
-                    teamBaronKills = challenges.teamBaronKills,
-                    teamDamagePercentage = challenges.teamDamagePercentage,
-                    teamElderDragonKills = challenges.teamElderDragonKills,
-                    teamRiftHeraldKills = challenges.teamRiftHeraldKills,
-                    teleportTakedowns = challenges.teleportTakedowns,
-                    threeWardsOneSweeperCount = challenges.threeWardsOneSweeperCount,
-                    tookLargeDamageSurvived = challenges.tookLargeDamageSurvived,
-                    turretPlatesTaken = challenges.turretPlatesTaken,
-                    turretTakedowns = challenges.turretTakedowns,
-                    turretsTakenWithRiftHerald = challenges.turretsTakenWithRiftHerald,
-                    twentyMinionsIn3SecondsCount = challenges.twentyMinionsIn3SecondsCount,
-                    unseenRecalls = challenges.unseenRecalls,
-                    visionScoreAdvantageLaneOpponent = challenges.visionScoreAdvantageLaneOpponent,
-                    visionScorePerMinute = challenges.visionScorePerMinute,
-                    wardsGuarded = challenges.wardsGuarded,
-                    wardTakedowns = challenges.wardTakedowns,
-                    wardTakedownsBefore20M = challenges.wardTakedownsBefore20M
+                    abilityUses = challenges?.abilityUses,
+                    acesBefore15Minutes = challenges?.acesBefore15Minutes,
+                    alliedJungleMonsterKills = challenges?.alliedJungleMonsterKills,
+                    assist12StreakCount = challenges?.assist12StreakCount,
+                    baronTakedowns = challenges?.baronTakedowns,
+                    bountyGold = challenges?.bountyGold,
+                    buffsStolen = challenges?.buffsStolen,
+                    blastConeOppositeOpponentCount = challenges?.blastConeOppositeOpponentCount,
+                    completeSupportQuestIntime = challenges?.completeSupportQuestIntime,
+                    controlWardsPlaced = challenges?.controlWardsPlaced,
+                    controlWardTimeCoverageInRiverOrEnemyHalf = challenges?.controlWardTimeCoverageInRiverOrEnemyHalf,
+                    damagePerMinute = challenges?.damagePerMinute,
+                    damageTakenOnTeamPercentage = challenges?.damageTakenOnTeamPercentage,
+                    dancedWithRiftHerald = challenges?.dancedWithRiftHerald,
+                    deathsByEnemyChamps = challenges?.deathsByEnemyChamps,
+                    doubleAces = challenges?.doubleAces,
+                    dragonTakedowns = challenges?.dragonTakedowns,
+                    dodgeSkillShotsSmallWindow = challenges?.dodgeSkillShotsSmallWindow,
+                    earliestDragonTakedown = challenges?.earliestDragonTakedown,
+                    earlyLaningPhaseGoldExpAdvantage = challenges?.earlyLaningPhaseGoldExpAdvantage,
+                    effectiveHealAndShielding = challenges?.effectiveHealAndShielding,
+                    elderDragonKillsWithOpposingSoul = challenges?.elderDragonMultikills,
+                    elderDragonMultikills = challenges?.elderDragonMultikills,
+                    enemyChampionImmobilizations = challenges?.enemyChampionImmobilizations,
+                    enemyJungleMonsterKills = challenges?.enemyJungleMonsterKills,
+                    epicMonsterKillsNearEnemyJungler = challenges?.epicMonsterKillsNearEnemyJungler,
+                    epicMonsterSteals = challenges?.epicMonsterSteals,
+                    epicMonsterKillsWithin30SecondsOfSpawn = challenges?.epicMonsterKillsWithin30SecondsOfSpawn,
+                    epicMonsterStolenWithoutSmite = challenges?.epicMonsterStolenWithoutSmite,
+                    firstTurretKilled = challenges?.firstTurretKilled,
+                    flawlessAces = challenges?.flawlessAces,
+                    firstTurretKilledTime = challenges?.firstTurretKilledTime,
+                    fullTeamTakedown = challenges?.fullTeamTakedown,
+                    gameLength = challenges?.gameLength,
+                    goldPerMinute = challenges?.goldPerMinute,
+                    getTakedownsInAllLanesEarlyJungleAsLaner = challenges?.getTakedownsInAllLanesEarlyJungleAsLaner,
+                    hadOpenNexus = challenges?.hadOpenNexus,
+                    highestChampionDamage = challenges?.highestChampionDamage,
+                    highestCrowdControlScore = challenges?.highestCrowdControlScore,
+                    highestWardKills = challenges?.highestWardKills,
+                    immobilizeAndKillWithAlly = challenges?.immobilizeAndKillWithAlly,
+                    initialBuffCount = challenges?.initialBuffCount,
+                    initialCrabCount = challenges?.initialCrabCount,
+                    junglerKillsEarlyJungle = challenges?.junglerKillsEarlyJungle,
+                    jungleCsBefore10Minutes = challenges?.jungleCsBefore10Minutes,
+                    junglerTakedownsNearDamagedEpicMonster = challenges?.junglerTakedownsNearDamagedEpicMonster,
+                    killingSprees = challenges?.killingSprees,
+                    kda = challenges?.kda,
+                    killAfterHiddenWithAlly = challenges?.killAfterHiddenWithAlly,
+                    killParticipation = challenges?.killParticipation,
+                    killsNearEnemyTurret = challenges?.killsNearEnemyTurret,
+                    killedChampTookFullTeamDamageSurvived = challenges?.killedChampTookFullTeamDamageSurvived,
+                    killsOnLanersEarlyJungleAsJungler = challenges?.killsOnLanersEarlyJungleAsJungler,
+                    killsOnOtherLanesEarlyJungleAsLaner = challenges?.killsOnOtherLanesEarlyJungleAsLaner,
+                    killsOnRecentlyHealedByAramPack = challenges?.killsOnRecentlyHealedByAramPack,
+                    killsUnderOwnTurret = challenges?.killsUnderOwnTurret,
+                    killsWithHelpFromEpicMonster = challenges?.killsWithHelpFromEpicMonster,
+                    knockEnemyIntoTeamAndKill = challenges?.knockEnemyIntoTeamAndKill,
+                    kturretsDestroyedBeforePlatesFall = challenges?.kTurretsDestroyedBeforePlatesFall,
+                    laneMinionsFirst10Minutes = challenges?.laneMinionsFirst10Minutes,
+                    legendaryCount = challenges?.legendaryCount,
+                    laningPhaseGoldExpAdvantage = challenges?.laningPhaseGoldExpAdvantage,
+                    lostAnInhibitor = challenges?.lostAnInhibitor,
+                    landSkillShotsEarlyGame = challenges?.landSkillShotsEarlyGame,
+                    outnumberedKills = challenges?.outnumberedKills,
+                    outnumberedNexusKill = challenges?.outnumberedNexusKill,
+                    maxCsAdvantageOnLaneOpponent = challenges?.maxCsAdvantageOnLaneOpponent,
+                    maxKillDeficit = challenges?.maxKillDeficit,
+                    maxLevelLeadLaneOpponent = challenges?.maxLevelLeadLaneOpponent,
+                    mejaisFullStackIntime = challenges?.mejaisFullStackIntime,
+                    multikills = challenges?.multikills,
+                    moreEnemyJungleThanOpponent = challenges?.moreEnemyJungleThanOpponent,
+                    multiKillOneSpell = challenges?.multiKillOneSpell,
+                    multikillsAfterAggressiveFlash = challenges?.multikillsAfterAggressiveFlash,
+                    multiTurretRiftHeraldCount = challenges?.multiTurretRiftHeraldCount,
+                    mythicItemUsed = challenges?.mythicItemUsed,
+                    perfectGame = challenges?.perfectGame,
+                    perfectDragonSoulsTaken = challenges?.perfectDragonSoulsTaken,
+                    pickKillWithAlly = challenges?.pickKillWithAlly,
+                    poroExplosions = challenges?.poroExplosions,
+                    saveAllyFromDeath = challenges?.saveAllyFromDeath,
+                    scuttleCrabKills = challenges?.scuttleCrabKills,
+                    skillshotsDodged = challenges?.skillshotsDodged,
+                    skillshotsHit = challenges?.skillshotsHit,
+                    snowballsHit = challenges?.snowballsHit,
+                    soloBaronKills = challenges?.soloBaronKills,
+                    soloKills = challenges?.soloKills,
+                    soloTurretsLategame = challenges?.soloTurretsLategame,
+                    stealthWardsPlaced = challenges?.stealthWardsPlaced,
+                    survivedSingleDigitHpCount = challenges?.survivedSingleDigitHpCount,
+                    survivedThreeImmobilizesInFight = challenges?.survivedThreeImmobilizesInFight,
+                    quickCleanse = challenges?.quickCleanse,
+                    quickFirstTurret = challenges?.quickFirstTurret,
+                    quickSoloKills = challenges?.quickSoloKills,
+                    riftHeraldTakedowns = challenges?.riftHeraldTakedowns,
+                    takedowns = challenges?.takedowns,
+                    takedownOnFirstTurret = challenges?.takedownOnFirstTurret,
+                    takedownsAfterGainingLevelAdvantage = challenges?.takedownsAfterGainingLevelAdvantage,
+                    takedownsBeforeJungleMinionSpawn = challenges?.takedownsBeforeJungleMinionSpawn,
+                    takedownsFirstXMinutes = challenges?.takedownsFirstXMinutes,
+                    takedownsInAlcove = challenges?.takedownsInAlcove,
+                    takedownsInEnemyFountain = challenges?.takedownsInEnemyFountain,
+                    teamBaronKills = challenges?.teamBaronKills,
+                    teamDamagePercentage = challenges?.teamDamagePercentage,
+                    teamElderDragonKills = challenges?.teamElderDragonKills,
+                    teamRiftHeraldKills = challenges?.teamRiftHeraldKills,
+                    teleportTakedowns = challenges?.teleportTakedowns,
+                    threeWardsOneSweeperCount = challenges?.threeWardsOneSweeperCount,
+                    tookLargeDamageSurvived = challenges?.tookLargeDamageSurvived,
+                    turretPlatesTaken = challenges?.turretPlatesTaken,
+                    turretTakedowns = challenges?.turretTakedowns,
+                    turretsTakenWithRiftHerald = challenges?.turretsTakenWithRiftHerald,
+                    twentyMinionsIn3SecondsCount = challenges?.twentyMinionsIn3SecondsCount,
+                    unseenRecalls = challenges?.unseenRecalls,
+                    visionScoreAdvantageLaneOpponent = challenges?.visionScoreAdvantageLaneOpponent,
+                    visionScorePerMinute = challenges?.visionScorePerMinute,
+                    wardsGuarded = challenges?.wardsGuarded,
+                    wardTakedowns = challenges?.wardTakedowns,
+                    wardTakedownsBefore20M = challenges?.wardTakedownsBefore20M
                 )
                 challengesRepository.save(challengesData)
-                participantsRepository.save(participantsData)
+
             }
             return matchInformation
         } else {
@@ -353,8 +356,9 @@ class RiotAPIService(
         }
     }
 
-    private fun addLolUser(lolName: String): LolUser {
+    fun addLolUser(lolName: String): LolUser {
         if (lolRepository.findByLolUserName(lolName).isEmpty) {
+            logger.info("없음 : $lolName")
             val riotLolUserData = externalKrApiClient.getUserInformationName(
                 apiKey = riotAPIKey,
                 username = lolName
@@ -372,6 +376,7 @@ class RiotAPIService(
                 lolUserData
             )
         } else {
+            logger.info("있음 : $lolName")
             val lolUserData = lolRepository.findByLolUserName(lolName).get()
             if (lolUserData.lolUserUpdateTime.plusMinutes(5) > LocalDateTime.now())
                 return lolUserData

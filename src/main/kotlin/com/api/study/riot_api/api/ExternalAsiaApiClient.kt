@@ -23,16 +23,17 @@ interface ExternalAsiaApiClient {
         @PathVariable("puuId") puuId: String
     ): RiotUserPuuIdResponse
 
-    @GetMapping("/lol/match/v5/matches/by-puuid/{puuId}/ids")
+    @GetMapping("/lol/match/v5/matches/by-puuid/{puuid}/ids")
     fun getMatchId(
         @RequestParam("api_key") apiKey: String,
-        @PathVariable("puuId") puuId: String,
+        @RequestParam("start") start: Int,
+        @RequestParam("count") count: Int,
+        @PathVariable("puuid") puuid: String
 //        @RequestParam("startTime") startTime: Long,
 //        @RequestParam("endTime") endTime: Long,
 //        @RequestParam("queue") queue: Int,
 //        @RequestParam("type") type: String,
-        @RequestParam("start") start: Int,
-        @RequestParam("count") count: Int
+
     ): UserMatchesIdResponse
 
     @GetMapping("/lol/match/v5/matches/{matchId}", consumes = ["application/json;charset=utf-8"])
