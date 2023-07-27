@@ -1,6 +1,6 @@
 package com.api.study.riot_api.api
 
-import com.api.study.riot_api.domain.dto.riotapi.ddragon.LolVersionsResponse
+import com.api.study.riot_api.domain.dto.riotapi.ddragon.verison.LolVersionsResponse
 import com.api.study.riot_api.domain.dto.riotapi.ddragon.champion.ChampionInformationDto
 import com.api.study.riot_api.exception.FeignCustomException
 import org.springframework.cloud.openfeign.FeignClient

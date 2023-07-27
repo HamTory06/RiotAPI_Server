@@ -7,6 +7,8 @@ import com.api.study.riot_api.api.ExternalKrDdragonLeagueoflegendsApiClient
 import com.api.study.riot_api.domain.dto.riotapi.kr.ChampionMasteryDto
 import com.api.study.riot_api.domain.dto.riotapi.kr.ChampionMasteryDtoArray
 import com.api.study.riot_api.domain.entity.*
+import com.api.study.riot_api.exception.CustomException
+import com.api.study.riot_api.exception.ErrorCode
 import com.api.study.riot_api.repository.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -48,6 +50,7 @@ class RiotAPIService(
             val matchInformationData = externalAsiaApiClient.getUserMatches(riotAPIKey, matchId)
             val metadata = matchInformationData.metadata
             val info = matchInformationData.info
+            val participants = matchInformationData.metadata.participants
             val matchInformation = MatchInformation(
                 matchId = metadata.matchId,
                 dataVersion = metadata.dataVersion,
@@ -59,7 +62,18 @@ class RiotAPIService(
                 gameMode = info.gameMode,
                 gameType = info.gameType,
                 gameVersion = info.gameVersion,
-                mapId = info.mapId
+                mapId = info.mapId,
+                puuid0 = participants[0],
+                puuid1 = participants[1],
+                puuid2 = participants[2],
+                puuid3 = participants[3],
+                puuid4 = participants[4],
+                puuid5 = participants[5],
+                puuid6 = participants[6],
+                puuid7 = participants[7],
+                puuid8 = participants[8],
+                puuid9 = participants[9],
+                //champLevel,championId,championName,item,summoner1Id
             )
             matchRepository.save(matchInformation)
             if (info.gameMode == "CLASSIC") {
@@ -348,7 +362,6 @@ class RiotAPIService(
                     wardTakedownsBefore20M = challenges?.wardTakedownsBefore20M
                 )
                 challengesRepository.save(challengesData)
-
             }
             return matchInformation
         } else {

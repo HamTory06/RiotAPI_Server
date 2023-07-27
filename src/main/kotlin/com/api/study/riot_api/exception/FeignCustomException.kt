@@ -7,7 +7,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.lang.Exception
 
-class FeignCustomException: ErrorDecoder {
+class FeignCustomException : ErrorDecoder {
     private val logger: Logger = LoggerFactory.getLogger(RiotAPIService::class.java)
 
 
