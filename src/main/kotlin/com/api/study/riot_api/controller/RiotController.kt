@@ -65,9 +65,10 @@ class RiotController(
 
     @GetMapping("/lol/match/getMatchInformation/{matchId}")
     fun getMatchInformation(
-        @PathVariable("matchId") matchId: String
+        @PathVariable("matchId") matchId: String,
+        @RequestParam("puuid") puuid: String,
     ): MatchInformation {
-        return riotAPIService.getMatchInformation(matchId)
+        return riotAPIService.getMatchInformation(matchId,puuid)
     }
 
     @GetMapping("/lol/champion/masteries/{champion}/{lolUserName}")

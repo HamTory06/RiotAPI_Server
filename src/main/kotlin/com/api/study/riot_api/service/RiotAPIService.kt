@@ -45,37 +45,41 @@ class RiotAPIService(
         )
     }
 
-    fun getMatchInformation(matchId: String): MatchInformation {
+    fun getMatchInformation(matchId: String, puuid: String): MatchInformation {
         if (!matchRepository.findById(matchId).isPresent) {
             val matchInformationData = externalAsiaApiClient.getUserMatches(riotAPIKey, matchId)
             val metadata = matchInformationData.metadata
             val info = matchInformationData.info
-            val participants = matchInformationData.metadata.participants
-            val matchInformation = MatchInformation(
-                matchId = metadata.matchId,
-                dataVersion = metadata.dataVersion,
-                gameName = info.gameName,
-                gameCreation = info.gameCreation,
-                gameDuration = info.gameDuration,
-                gameEndTimestamp = info.gameEndTimestamp,
-                gameStartTimestamp = info.gameStartTimestamp,
-                gameMode = info.gameMode,
-                gameType = info.gameType,
-                gameVersion = info.gameVersion,
-                mapId = info.mapId,
-                puuid0 = participants[0],
-                puuid1 = participants[1],
-                puuid2 = participants[2],
-                puuid3 = participants[3],
-                puuid4 = participants[4],
-                puuid5 = participants[5],
-                puuid6 = participants[6],
-                puuid7 = participants[7],
-                puuid8 = participants[8],
-                puuid9 = participants[9],
-                //champLevel,championId,championName,item,summoner1Id
-            )
-            matchRepository.save(matchInformation)
+            for(i in 0 until info.participants.size){
+               if(info.participants[i].puuid == puuid){
+                   val matchInformation = MatchInformation(
+                       matchId = metadata.matchId,
+                       dataVersion = metadata.dataVersion,
+                       gameName = info.gameName,
+                       gameCreation = info.gameCreation,
+                       gameDuration = info.gameDuration,
+                       gameEndTimestamp = info.gameEndTimestamp,
+                       gameStartTimestamp = info.gameStartTimestamp,
+                       gameMode = info.gameMode,
+                       gameType = info.gameType,
+                       gameVersion = info.gameVersion,
+                       mapId = info.mapId,
+                       championId = info.participants[i].championId,
+                       championLevel = info.participants[i].champLevel,
+                       item0 = info.participants[i].item0,
+                       item1 = info.participants[i].item1,
+                       item2= info.participants[i].item2,
+                       item3 = info.participants[i].item3,
+                       item4 = info.participants[i].item4,
+                       item5 = info.participants[i].item5,
+                       item6 = info.participants[i].item6
+                   )
+                   matchRepository.save(matchInformation)
+                   return matchInformation
+               }
+            }
+
+
             if (info.gameMode == "CLASSIC") {
                 val participantsUserPuuId = ParticipantsUserPuuid(
                     matchId = metadata.matchId,
@@ -363,10 +367,11 @@ class RiotAPIService(
                 )
                 challengesRepository.save(challengesData)
             }
-            return matchInformation
+
         } else {
             return matchRepository.findById(matchId).get()
         }
+        throw CustomException(ErrorCode.SERVER_ERROR)
     }
 
     fun addLolUser(lolName: String): LolUser {
