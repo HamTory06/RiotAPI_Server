@@ -13,7 +13,11 @@ import com.api.study.riot_api.repository.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
+import java.io.File
+import java.io.IOException
 import java.time.LocalDateTime
 
 @Service
