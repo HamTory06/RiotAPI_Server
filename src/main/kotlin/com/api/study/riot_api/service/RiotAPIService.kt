@@ -50,33 +50,33 @@ class RiotAPIService(
             val matchInformationData = externalAsiaApiClient.getUserMatches(riotAPIKey, matchId)
             val metadata = matchInformationData.metadata
             val info = matchInformationData.info
-            for(i in 0 until info.participants.size){
-               if(info.participants[i].puuid == puuid){
-                   val matchInformation = MatchInformation(
-                       matchId = metadata.matchId,
-                       dataVersion = metadata.dataVersion,
-                       gameName = info.gameName,
-                       gameCreation = info.gameCreation,
-                       gameDuration = info.gameDuration,
-                       gameEndTimestamp = info.gameEndTimestamp,
-                       gameStartTimestamp = info.gameStartTimestamp,
-                       gameMode = info.gameMode,
-                       gameType = info.gameType,
-                       gameVersion = info.gameVersion,
-                       mapId = info.mapId,
-                       championId = info.participants[i].championId,
-                       championLevel = info.participants[i].champLevel,
-                       item0 = info.participants[i].item0,
-                       item1 = info.participants[i].item1,
-                       item2= info.participants[i].item2,
-                       item3 = info.participants[i].item3,
-                       item4 = info.participants[i].item4,
-                       item5 = info.participants[i].item5,
-                       item6 = info.participants[i].item6
-                   )
-                   matchRepository.save(matchInformation)
-                   return matchInformation
-               }
+            for (i in 0 until info.participants.size) {
+                if (info.participants[i].puuid == puuid) {
+                    val matchInformation = MatchInformation(
+                        matchId = metadata.matchId,
+                        dataVersion = metadata.dataVersion,
+                        gameName = info.gameName,
+                        gameCreation = info.gameCreation,
+                        gameDuration = info.gameDuration,
+                        gameEndTimestamp = info.gameEndTimestamp,
+                        gameStartTimestamp = info.gameStartTimestamp,
+                        gameMode = info.gameMode,
+                        gameType = info.gameType,
+                        gameVersion = info.gameVersion,
+                        mapId = info.mapId,
+                        championId = info.participants[i].championId,
+                        championLevel = info.participants[i].champLevel,
+                        item0 = info.participants[i].item0,
+                        item1 = info.participants[i].item1,
+                        item2 = info.participants[i].item2,
+                        item3 = info.participants[i].item3,
+                        item4 = info.participants[i].item4,
+                        item5 = info.participants[i].item5,
+                        item6 = info.participants[i].item6
+                    )
+                    matchRepository.save(matchInformation)
+                    return matchInformation
+                }
             }
 
 
@@ -464,5 +464,20 @@ class RiotAPIService(
 
     fun getVersions(): String {
         return externalKrDdragonLeagueoflegendsApiClient.getVersions()[0]
+    }
+
+    fun getImageDownloads(imageType: String,imageName: String): ResponseEntity<ByteArray> {
+        val imagePath =
+            File("/Users/hamtory/Documents/github/BackEnd/RiotAPI/src/main/kotlin/com/api/study/riot_api/file/image/$imageType/${imageName}.png")
+        try {
+            val imageBytes = imagePath.inputStream().readAllBytes()
+
+            return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_PNG)
+                .body(imageBytes)
+        } catch (e: IOException){
+            logger.info(imagePath.toString())
+            throw CustomException(ErrorCode.NOT_FOUND_IMAGE_BAD_REQUEST)
+        }
     }
 }

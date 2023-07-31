@@ -29,9 +29,9 @@ class RiotController(
     private val logger: Logger = LoggerFactory.getLogger(RiotController::class.java)
 
     @GetMapping("/riot.txt")
-    fun download(): ResponseEntity<ByteArray> {
+    fun getRiotText(): ResponseEntity<ByteArray> {
         val file =
-            File("/Users/hamtory/Documents/github/BackEnd/RiotAPI/src/main/kotlin/com/api/study/riot_api/file/riot.txt")
+            File("/Users/hamtory/Documents/github/BackEnd/RiotAPI/src/main/kotlin/com/api/study/riot_api/file/text/riot.txt")
         val path = Paths.get(file.absolutePath)
 
         val header = HttpHeaders()
@@ -89,6 +89,14 @@ class RiotController(
     @GetMapping("/lol/status/versions")
     fun getVersions(): LolVersion {
         return LolVersion(riotAPIService.getVersions())
+    }
+
+    @GetMapping("/lol/file/image/{type}/{imageFileName}")
+    fun getChampionImg(
+        @PathVariable("type") type: String,
+        @PathVariable("imageFileName") imageFileName: String,
+    ):ResponseEntity<ByteArray>{
+        return riotAPIService.getImageDownloads(type, imageFileName)
     }
 
 }
