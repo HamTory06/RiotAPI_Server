@@ -14,7 +14,8 @@ enum class ErrorCode(private val status: Int, private val message: String) {
     NOT_FOUND_USER_PASSWORD_BAD_REQUEST(400, "Password가 클렸습니다"),
     SERVER_ERROR(500, "무언가가 잘못됬습니다."),
     EMPTY_TEXT_BAD_REQUEST(400, "id가 비었습니다"),
-    NOT_FOUND_IMAGE_BAD_REQUEST(400, "사진을 찾을수 없습니다");
+    NOT_FOUND_IMAGE_BAD_REQUEST(400, "사진을 찾을수 없습니다"),
+    PASSWORD_BAD_REQUEST(400, "대소문자, 특수문자, 숫자를 포함 시켜주세요.");
 
 
     fun getStatus(): Int {

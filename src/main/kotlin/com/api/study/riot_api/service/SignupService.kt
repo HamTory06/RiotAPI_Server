@@ -17,17 +17,24 @@ class SignupService(
 ) {
     private val logger: Logger = LoggerFactory.getLogger(SignupService::class.java)
     private val passwordEncoder = BCryptPasswordEncoder()
+    private val passwordPattern = Regex("^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@\$!%*?&])[A-Za-z\\d@\$!%*?&]+\$")
 
     private fun signupService(request: SignupRequestDto) {
         val encryptedPassword = passwordEncoder.encode(request.password)
 
-        val userEntity = User(
-            name = request.name,
-            id = request.id,
-            password = encryptedPassword,
-        )
+        if(passwordPattern.matches(request.password)){
+            val userEntity = User(
+                name = request.name,
+                id = request.id,
+                password = encryptedPassword,
+            )
+            accountRepository.save(userEntity)
+        } else {
+            throw CustomException(ErrorCode.PASSWORD_BAD_REQUEST)
+        }
 
-        accountRepository.save(userEntity)
+
+
     }
 
     fun save(signupRequestDTO: SignupRequestDto) {
