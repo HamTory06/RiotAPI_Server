@@ -73,9 +73,9 @@ class LoginService(
                     token = JwtDto(accountToken, refreshToken)
                 )
             }
-            throw CustomException(ErrorCode.NOT_FOUND_USER_PASSWORD_BAD_REQUEST)
+            throw CustomException(ErrorCode.LOGIN_BAD_REQUEST)
         }
-        throw CustomException(ErrorCode.NOT_FOUND_USER_ID_BAD_REQUEST)
+        throw CustomException(ErrorCode.LOGIN_BAD_REQUEST)
     }
 
 }
