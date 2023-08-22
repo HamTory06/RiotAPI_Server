@@ -45,11 +45,11 @@ class JwtToken {
     }
 
     fun validateToken(token: String): Boolean {
-        val token = token.replace("Bearer ", "") // "Bearer " 제거
+        val newToken = token.replace("Bearer ", "") // "Bearer " 제거
         return try {
             val claims: Claims = Jwts.parser()
                 .setSigningKey(secret)
-                .parseClaimsJws(token)
+                .parseClaimsJws(newToken)
                 .body
 
             val expiration = claims.expiration

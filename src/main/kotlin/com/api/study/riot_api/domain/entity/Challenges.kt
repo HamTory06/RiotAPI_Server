@@ -3,7 +3,6 @@ package com.api.study.riot_api.domain.entity
 import javax.persistence.*
 
 @Entity
-@Table(name  = "challenges")
 class Challenges (
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

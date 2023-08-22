@@ -463,8 +463,8 @@ class RiotAPIService(
         logger.info(version)
         val championDataMap =
             externalKrDdragonLeagueoflegendsApiClient.getChampionInformation(version, "$champion.json").data.values
-        val champion = championDataMap.map { it }
-        val championKey = champion[0].key
+        val championData = championDataMap.map { it }
+        val championKey = championData[0].key
         logger.info(championKey)
         return externalKrApiClient.getUserChampionMasteries(
             apiKey = riotAPIKey,
