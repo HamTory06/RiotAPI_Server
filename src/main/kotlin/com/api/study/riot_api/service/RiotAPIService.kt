@@ -93,6 +93,7 @@ class RiotAPIService(
             if (info.gameMode == "CLASSIC") {
                 val participantsUserPuuId = ParticipantsUserPuuid(
                     matchId = metadata.matchId,
+                    gameMode = info.gameMode,
                     puuid_0 = metadata.participants[0],
                     puuid_1 = metadata.participants[1],
                     puuid_2 = metadata.participants[2],

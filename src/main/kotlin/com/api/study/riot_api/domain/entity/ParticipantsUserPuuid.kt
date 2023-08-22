@@ -7,6 +7,7 @@ import javax.persistence.Id
 class ParticipantsUserPuuid (
     @Id
     val matchId: String,
+    val gameMode: String,
     val puuid_0: String,
     val puuid_1: String,
     val puuid_2: String,
