@@ -50,6 +50,8 @@ dependencies {
     runtimeOnly ("mysql:mysql-connector-java")
     annotationProcessor ("org.projectlombok:lombok")
     testImplementation ("org.springframework.boot:spring-boot-starter-test")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
 
     //swagger
