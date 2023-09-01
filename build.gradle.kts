@@ -53,7 +53,7 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
-
+    implementation ("org.mariadb.jdbc:mariadb-java-client")
     //swagger
     implementation ("org.springdoc:springdoc-openapi-ui:1.6.15")
 
