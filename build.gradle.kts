@@ -12,7 +12,7 @@ allprojects{
     version = "0.0.1-SNAPSHOT"
 
 
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    tasks.withType<KotlinCompile> {
         kotlinOptions.jvmTarget = "17"
         kotlinOptions.freeCompilerArgs = listOf(
             "-Xjsr305=strict",
