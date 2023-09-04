@@ -18,7 +18,7 @@ class JwtProvider(
         const val ACCESS = "access"
         const val REFRESH = "refresh"
     }
-    private fun generateJwtAccessToken(userId: UUID, id: String): String{
+    fun generateJwtAccessToken(userId: UUID, id: String): String{
         return Jwts.builder()
             .signWith(SignatureAlgorithm.HS256, securityProperties.key)
             .setHeaderParam(Header.JWT_TYPE, ACCESS)
@@ -29,7 +29,7 @@ class JwtProvider(
             .compact()
     }
 
-    private fun generateJwtRefreshToken(userId: UUID): String{
+    fun generateJwtRefreshToken(userId: UUID): String{
         val token = Jwts.builder()
             .signWith(SignatureAlgorithm.HS256, securityProperties.key)
             .setHeaderParam(Header.JWT_TYPE, REFRESH)
