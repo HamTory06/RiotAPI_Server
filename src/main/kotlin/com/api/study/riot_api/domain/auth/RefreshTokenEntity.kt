@@ -1,13 +1,20 @@
 package com.api.study.riot_api.domain.auth
 
-import org.springframework.data.redis.core.RedisHash
+import com.api.study.riot_api.domain.auth.type.Authority
 import java.util.*
+import javax.validation.constraints.NotNull
+import javax.persistence.Entity
 import javax.persistence.Id
+import javax.persistence.Table
 
-
-@RedisHash
+@Entity
+@Table(name = "refresh_token")
 data class RefreshTokenEntity(
     @Id
-    val token: String,
     val userId: UUID,
+    @field:NotNull
+    val token: String,
+    @field:NotNull
+    val authority: Authority,
+    val expirationTime: Int
 )
