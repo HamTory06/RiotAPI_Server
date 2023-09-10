@@ -39,19 +39,25 @@ dependencyManagement {
 }
 
 dependencies {
-    implementation ("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation ("org.springframework.boot:spring-boot-starter-web")
-    implementation ("org.springframework.cloud:spring-cloud-starter-config")
-    implementation ("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation ("org.jetbrains.kotlin:kotlin-reflect")
-    implementation ("org.springframework.boot:spring-boot-starter-security")
+
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+
+    compileOnly("io.jsonwebtoken:jjwt-api:0.11.2")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.2")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.2")
+
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     compileOnly ("org.projectlombok:lombok")
     developmentOnly ("org.springframework.boot:spring-boot-devtools")
-    runtimeOnly ("mysql:mysql-connector-java")
     annotationProcessor ("org.projectlombok:lombok")
-    testImplementation ("org.springframework.boot:spring-boot-starter-test")
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
-    implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
     implementation ("org.mariadb.jdbc:mariadb-java-client")
     //swagger
@@ -60,15 +66,12 @@ dependencies {
     implementation ("javax.servlet:javax.servlet-api:4.0.1")
     implementation ("jakarta.servlet:jakarta.servlet-api:4.0.4")
 
-    //jwt
-    implementation ("io.jsonwebtoken:jjwt:0.9.1")
-
-    implementation ("org.springframework.boot:spring-boot-starter-validation")
-
     //Open Feign
     implementation ("org.springframework.cloud:spring-cloud-starter-openfeign")
     implementation ("org.springframework.cloud:spring-cloud-starter-bootstrap")
 
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.security:spring-security-test")
 
 
 }
