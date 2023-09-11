@@ -2,6 +2,8 @@ package com.api.study.riot_api.domain.auth.service
 
 import com.api.study.riot_api.domain.auth.controller.dto.response.TokenResponseDto
 import com.api.study.riot_api.domain.auth.controller.dto.response.LoginDto
+import com.api.study.riot_api.domain.auth.exception.InvalidPasswordException
+import com.api.study.riot_api.domain.auth.exception.NotExistIdException
 import com.api.study.riot_api.domain.auth.type.Authority
 import com.api.study.riot_api.domain.user.repository.UserRepository
 import com.api.study.riot_api.global.security.jwt.JwtProvider
@@ -29,11 +31,11 @@ class LoginService(
                 userId = it.userId
                 authority = Authority.USER
             } else {
-                throw TODO("존재하지 않는 id로 로그인")
+                throw NotExistIdException
             }
         }
 
-        if(!passwordEncoder.matches(loginData.password, password)) throw TODO("로그인 비밀번호 틀림")
+        if(!passwordEncoder.matches(loginData.password, password)) throw InvalidPasswordException
 
         return jwtProvider.receiveToken(userId, authority)
 

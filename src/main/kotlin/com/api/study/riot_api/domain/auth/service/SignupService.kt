@@ -1,6 +1,7 @@
 package com.api.study.riot_api.domain.auth.service
 
 import com.api.study.riot_api.domain.auth.controller.dto.response.SignupDto
+import com.api.study.riot_api.domain.auth.exception.ExistIdException
 import com.api.study.riot_api.domain.user.UserEntity
 import com.api.study.riot_api.domain.user.repository.UserRepository
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -14,7 +15,7 @@ class SignupService(
 ) {
     fun signup(signupDto: SignupDto){
         if(userRepository.findById(signupDto.id) != null)
-            throw TODO("이미 존재하는 ID로 회원가입")
+            throw ExistIdException
 
         val userEntity = UserEntity(
             userId = UUID.randomUUID(),
